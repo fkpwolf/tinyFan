@@ -17,6 +17,7 @@ at least be connected to INT0 as well.
 #define LED_PORT_DDR        DDRB
 #define LED_PORT_OUTPUT     PORTB
 #define LED_BIT             0
+#define T0_CLK  16113
 
 #include <avr/io.h>
 #include <avr/wdt.h>
@@ -28,14 +29,28 @@ at least be connected to INT0 as well.
 #include "usbdrv.h"
 #include "oddebug.h"        /* This is also an example for using debug macros */
 unsigned int timecount = 0;
+volatile unsigned int counterRPS = 0;
 
 ISR(TIM0_OVF_vect) {
-				TCNT0 =0;
+				/*TCNT0 =0;
 				if(++timecount == 31){
 								LED_PORT_OUTPUT ^= _BV(LED_BIT);	//toggle
 								timecount = 0;
-				}
+				}*/
+				if(timecount  < 100)
+					timecount++;
 }
+
+ISR(SIG_PIN_CHANGE) {
+				LED_PORT_OUTPUT ^= _BV(LED_BIT); //toggle LED
+				TCCR0B = 0; // stop counting
+				//counterRPS = (256 * timecount) + TCNT0;
+				counterRPS = TCNT0;
+				TCNT0 = 0;
+				//timecount = 0;
+				TCCR0B = 0x05; //start
+}
+
 /* ------------------------------------------------------------------------- */
 /* ----------------------------- USB interface ----------------------------- */
 /* ------------------------------------------------------------------------- */
@@ -68,12 +83,20 @@ static uchar    bytesRemaining;
  */
 uchar   usbFunctionRead(uchar *data, uchar len)
 {
-    if(len > bytesRemaining)
+		//speedometer
+		//unsigned char currentRPS = (T0_CLK/4) / counterRPS;
+		//unsigned int currentRPS = 0x1234;
+		unsigned int currentRPS = counterRPS;
+		data[0] = currentRPS;
+		data[1] = currentRPS >> 8;
+		return 2;
+		
+    /*if(len > bytesRemaining)
         len = bytesRemaining;
     eeprom_read_block(data, (uchar *)0 + currentAddress, len);
     currentAddress += len;
     bytesRemaining -= len;
-    return len;
+    return len;*/
 }
 
 /* usbFunctionWrite() is called when the host sends a chunk of data to the
@@ -139,13 +162,15 @@ uchar   i;
         _delay_ms(1);
     }
     usbDeviceConnect();
-		//
-		 LED_PORT_DDR |= _BV(LED_BIT);   /* make the LED bit an output */
-    // 1:1024 presc. 
-    TCCR0B = 0x05; 
+		
+		
+		PCMSK = (1 << PB4); //enable interrupt on PB3
+		GIMSK |= (1 << PCIE); //Pin change interrupt enable
+		LED_PORT_DDR |= _BV(LED_BIT);   // make the LED bit an output 
+    TCCR0B = 0x05;// 1:1024 presc. 
 		TCNT0 =0;
-		TIMSK= 1 << TOIE0; //unmark Timer 0 overflow interrup
-		//
+		TIMSK= 1 << TOIE0; //unmark Timer 0 overflow interrupt
+   
     sei();
     DBG1(0x01, 0, 0);       /* debug output: main loop starts */
     for(;;){                /* main event loop */

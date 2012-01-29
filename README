@@ -1,1 +1,4 @@
-bbbbb
+
+
+Mac
+  to view usb device, use command "system_profiler SPUSBDataType"

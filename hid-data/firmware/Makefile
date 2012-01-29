@@ -7,12 +7,14 @@
 # License: GNU GPL v2 (see License.txt), GNU GPL v3 or proprietary (CommercialLicense.txt)
 # This Revision: $Id: Makefile 692 2008-11-07 15:07:40Z cs $
 
+#to make at Mac, use 'sudo port install avr-libc' and 'sudo port install avrdude'
+
 DEVICE  = attiny45
 F_CPU   = 16500000	# in Hz
 FUSE_L  = 0xe1
 # see below for fuse values for particular devices
 FUSE_H  = 0xdd
-AVRDUDE = avrdude -c dragon_isp -P usb -p $(DEVICE) # edit this line for your programmer
+AVRDUDE = avrdude -c usbtiny -P usb -p $(DEVICE) # edit this line for your programmer
 
 CFLAGS  = -Iusbdrv -I. -Ilibs-device -DDEBUG_LEVEL=0
 OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o libs-device/osccal.o

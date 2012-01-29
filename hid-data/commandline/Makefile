@@ -15,9 +15,16 @@
 #USBLIBS=    `libusb-config --libs`
 #EXE_SUFFIX=
 
-USBFLAGS = -I/usr/local/include
-USBLIBS = -L/usr/local/lib -lusb
-EXE_SUFFIX = .exe
+#mac first you should install it
+#sudo port install libusb-legacy
+USBFLAGS = -I/opt/local/include/libusb-legacy/
+USBLIBS = -L/opt/local/lib/libusb-legacy/ -lusb-legacy
+EXE_SUFFIX=
+
+#win cygwin
+#USBFLAGS = -I/usr/local/include
+#USBLIBS = -L/usr/local/lib -lusb
+#EXE_SUFFIX = .exe
 
 CC=				gcc
 CFLAGS=			-O -Wall $(USBFLAGS)

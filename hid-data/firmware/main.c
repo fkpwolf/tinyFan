@@ -1,19 +1,3 @@
-/* Name: main.c
- * Project: hid-data, example how to use HID for data transfer
- * Author: Christian Starkjohann
- * Creation Date: 2008-04-11
- * Tabsize: 4
- * Copyright: (c) 2008 by OBJECTIVE DEVELOPMENT Software GmbH
- * License: GNU GPL v2 (see License.txt), GNU GPL v3 or proprietary (CommercialLicense.txt)
- * This Revision: $Id: main.c 777 2010-01-15 18:34:48Z cs $
- */
-
-/*
-This example should run on most AVRs with only little changes. No special
-hardware resources except INT0 are used. You may have to change usbconfig.h for
-different I/O pins for USB. Please note that USB D+ must be the INT0 pin, or
-at least be connected to INT0 as well.
-*/
 #define LED_PORT_DDR        DDRB
 #define LED_PORT_OUTPUT     PORTB
 #define LED_BIT             0
@@ -32,23 +16,11 @@ unsigned int timecount = 0;
 volatile unsigned int counterRPS = 0;
 
 ISR(TIM0_OVF_vect) {
-				/*TCNT0 =0;
+				TCNT0 =0;
 				if(++timecount == 31){
 								LED_PORT_OUTPUT ^= _BV(LED_BIT);	//toggle
 								timecount = 0;
-				}*/
-				if(timecount  < 100)
-					timecount++;
-}
-
-ISR(SIG_PIN_CHANGE) {
-				LED_PORT_OUTPUT ^= _BV(LED_BIT); //toggle LED
-				TCCR0B = 0; // stop counting
-				//counterRPS = (256 * timecount) + TCNT0;
-				counterRPS = TCNT0;
-				TCNT0 = 0;
-				//timecount = 0;
-				TCCR0B = 0x05; //start
+				}
 }
 
 /* ------------------------------------------------------------------------- */
@@ -164,8 +136,6 @@ uchar   i;
     usbDeviceConnect();
 		
 		
-		PCMSK = (1 << PB4); //enable interrupt on PB3
-		GIMSK |= (1 << PCIE); //Pin change interrupt enable
 		LED_PORT_DDR |= _BV(LED_BIT);   // make the LED bit an output 
     TCCR0B = 0x05;// 1:1024 presc. 
 		TCNT0 =0;

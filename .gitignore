@@ -38,3 +38,19 @@ hid-data/firmware/usbdrv/oddebug.o
 hid-data/firmware/usbdrv/usbdrv.o
 
 hid-data/commandline/hidtool
+
+hid-data/commandline/hidtool.o
+
+hid-data/commandline/hidtool.o
+
+hid-data/firmware/.main.c.swp
+
+hid-data/commandline/hidtool.o
+
+hid-data/firmware/main.o
+
+hid-data/firmware/main.elf
+
+hid-data/firmware/main.hex
+
+hid-data/commandline/hidtool.o

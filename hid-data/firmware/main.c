@@ -2,6 +2,7 @@
 #define LED_PORT_OUTPUT     PORTB
 #define LED_BIT             4
 #define T0_CLK  16113
+#define PIN_STEADY_THRESHOLD 6 
 
 #include <avr/io.h>
 #include <avr/wdt.h>
@@ -15,30 +16,28 @@
 volatile int timecount = 0;
 volatile int counterRPS = 0;
 volatile int lastButtonState = 0;
-volatile int buttonState;
 volatile long lastChangedTime = 0;
 volatile long t = 0;
 volatile int lastButtonValue =0;
 
 volatile long interval;
 
-ISR(TIM0_OVF_vect) { //one round is 128um
+ISR(TIM0_OVF_vect) { //one round is 128um(1:8), 1000um(1:64)
   sei();//otherwise usb not stable. see http://forums.obdev.at/viewtopic.php?f=8&t=2827
 
 	TCNT0 =0;
-//http://www.avrfreaks.net/index.php?name=PNphpBB2&file=printview&t=93058&start=0
+	//read pin data. see http://www.avrfreaks.net/index.php?name=PNphpBB2&file=printview&t=93058&start=0
 	int reading = PINB & _BV(LED_BIT);
-	if( reading != lastButtonState){
+	if( reading != lastButtonState)
 		timecount = 0;
-	} else
+	else
 		timecount++;
-	if(timecount == 6){ //128*6 = 768us
-		buttonState = reading;
-	}
-	if( lastButtonValue != buttonState) {
-		interval = t - lastChangedTime;
-		lastChangedTime = t;
-		lastButtonValue = buttonState;
+	if(timecount == PIN_STEADY_THRESHOLD){ 
+	 if( lastButtonValue != reading) { //value changed
+			interval = t - lastChangedTime;
+			lastChangedTime = t;
+			lastButtonValue = reading;
+		}
 	}
 	lastButtonState = reading;
 	t++;
@@ -81,7 +80,7 @@ uchar   usbFunctionRead(uchar *data, uchar len)
 		//speedometer
 		//unsigned char currentRPS = (T0_CLK/4) / counterRPS;
 		//unsigned int currentRPS = 0x1234;
-		unsigned int currentRPS = counterRPS;
+		//unsigned int currentRPS = counterRPS;
 		data[0] = interval;
 		//data[1] = currentRPS >> 8;
 		return 2;
@@ -157,7 +156,7 @@ int main(void)
     usbDeviceConnect();
 		
 		LED_PORT_DDR &= ~_BV(LED_BIT);   // make the LED bit an input 
-    TCCR0B = 0x02;// 1:8 presc. 
+    TCCR0B = 0x03;// 1:8 presc. 
 		TCNT0 =0;
 		TIMSK= 1 << TOIE0; //unmark Timer 0 overflow interrupt
    

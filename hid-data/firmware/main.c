@@ -1,6 +1,6 @@
 #define LED_PORT_DDR        DDRB
 #define LED_PORT_OUTPUT     PORTB
-#define LED_BIT             0
+#define LED_BIT             4
 #define T0_CLK  16113
 
 #include <avr/io.h>
@@ -11,21 +11,44 @@
 
 #include <avr/pgmspace.h>   /* required by usbdrv.h */
 #include "usbdrv.h"
-#include "oddebug.h"        /* This is also an example for using debug macros */
-unsigned int timecount = 0;
-volatile unsigned int counterRPS = 0;
+/* ------------------------------------------------------------------------ */
+volatile int timecount = 0;
+volatile int counterRPS = 0;
+volatile int lastButtonState = 0;
+volatile int buttonState;
+volatile long lastChangedTime = 0;
+volatile long t = 0;
+volatile int lastButtonValue =0;
 
-ISR(TIM0_OVF_vect) {
-				TCNT0 =0;
-				if(++timecount == 31){
-								LED_PORT_OUTPUT ^= _BV(LED_BIT);	//toggle
-								timecount = 0;
-				}
+volatile long interval;
+
+ISR(TIM0_OVF_vect) { //one round is 128um
+  sei();//otherwise usb not stable. see http://forums.obdev.at/viewtopic.php?f=8&t=2827
+
+	TCNT0 =0;
+//http://www.avrfreaks.net/index.php?name=PNphpBB2&file=printview&t=93058&start=0
+	int reading = PINB & _BV(LED_BIT);
+	if( reading != lastButtonState){
+		timecount = 0;
+	} else
+		timecount++;
+	if(timecount == 6){ //128*6 = 768us
+		buttonState = reading;
+	}
+	if( lastButtonValue != buttonState) {
+		interval = t - lastChangedTime;
+		lastChangedTime = t;
+		lastButtonValue = buttonState;
+	}
+	lastButtonState = reading;
+	t++;
+	if (t > 10000){ //re-init
+		t = t - lastChangedTime;
+		lastChangedTime = 0;	
+	}
 }
 
-/* ------------------------------------------------------------------------- */
 /* ----------------------------- USB interface ----------------------------- */
-/* ------------------------------------------------------------------------- */
 
 PROGMEM char usbHidReportDescriptor[22] = {    /* USB report descriptor */
     0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
@@ -59,8 +82,8 @@ uchar   usbFunctionRead(uchar *data, uchar len)
 		//unsigned char currentRPS = (T0_CLK/4) / counterRPS;
 		//unsigned int currentRPS = 0x1234;
 		unsigned int currentRPS = counterRPS;
-		data[0] = currentRPS;
-		data[1] = currentRPS >> 8;
+		data[0] = interval;
+		//data[1] = currentRPS >> 8;
 		return 2;
 		
     /*if(len > bytesRemaining)
@@ -114,7 +137,7 @@ usbRequest_t    *rq = (void *)data;
 
 int main(void)
 {
-uchar   i;
+		uchar   i;
 
     wdt_enable(WDTO_1S);
     /* Even if you don't use the watchdog, turn it off here. On newer devices,
@@ -124,8 +147,6 @@ uchar   i;
      * That's the way we need D+ and D-. Therefore we don't need any
      * additional hardware initialization.
      */
-    odDebugInit();
-    DBG1(0x00, 0, 0);       /* debug output: main starts */
     usbInit();
     usbDeviceDisconnect();  /* enforce re-enumeration, do this while interrupts are disabled! */
     i = 0;
@@ -135,20 +156,15 @@ uchar   i;
     }
     usbDeviceConnect();
 		
-		
-		LED_PORT_DDR |= _BV(LED_BIT);   // make the LED bit an output 
-    TCCR0B = 0x05;// 1:1024 presc. 
+		LED_PORT_DDR &= ~_BV(LED_BIT);   // make the LED bit an input 
+    TCCR0B = 0x02;// 1:8 presc. 
 		TCNT0 =0;
 		TIMSK= 1 << TOIE0; //unmark Timer 0 overflow interrupt
    
     sei();
-    DBG1(0x01, 0, 0);       /* debug output: main loop starts */
     for(;;){                /* main event loop */
-        DBG1(0x02, 0, 0);   /* debug output: main loop iterates */
         wdt_reset();
         usbPoll();
     }
     return 0;
 }
-
-/* ------------------------------------------------------------------------- */

@@ -3,47 +3,34 @@
 #define LED_BIT             4
 #define T0_CLK  16113
 #define PIN_STEADY_THRESHOLD 6 
+#define Plus1Sec 1000 // 1m/1000um
 
 #include <avr/io.h>
 #include <avr/wdt.h>
 #include <avr/interrupt.h>  /* for sei() */
 #include <util/delay.h>     /* for _delay_ms() */
 #include <avr/eeprom.h>
+#include <stdbool.h>
 
 #include <avr/pgmspace.h>   /* required by usbdrv.h */
 #include "usbdrv.h"
 /* ------------------------------------------------------------------------ */
-volatile int timecount = 0;
-volatile int counterRPS = 0;
-volatile int lastButtonState = 0;
-volatile long lastChangedTime = 0;
-volatile long t = 0;
-volatile int lastButtonValue =0;
-
-volatile long interval;
+volatile unsigned long SecCnt = Plus1Sec;
+volatile bool	  NewSecond;
+volatile unsigned long TachoDebounce = 0;
+volatile unsigned int TachoCapture = 0;
+volatile unsigned int TachoCaptureOut = 0;
 
 ISR(TIM0_OVF_vect) { //one round is 128um(1:8), 1000um(1:64)
-  sei();//otherwise usb not stable. see http://forums.obdev.at/viewtopic.php?f=8&t=2827
-
 	TCNT0 =0;
-	//read pin data. see http://www.avrfreaks.net/index.php?name=PNphpBB2&file=printview&t=93058&start=0
-	int reading = PINB & _BV(LED_BIT);
-	if( reading != lastButtonState)
-		timecount = 0;
-	else
-		timecount++;
-	if(timecount == PIN_STEADY_THRESHOLD){ 
-	 if( lastButtonValue != reading) { //value changed
-			interval = t - lastChangedTime;
-			lastChangedTime = t;
-			lastButtonValue = reading;
-		}
-	}
-	lastButtonState = reading;
-	t++;
-	if (t > 10000){ //re-init
-		t = t - lastChangedTime;
-		lastChangedTime = 0;	
+	if(PINB & _BV(LED_BIT)) {
+		if(TachoDebounce != 255) TachoDebounce++;			// count up if the input is high
+	} else
+		TachoDebounce = 0;									// reset the count if the input is low
+	if(TachoDebounce == 4) TachoCapture++;	//why TachoDebounce'++' here?
+	if(--SecCnt == 0) {
+		NewSecond = true;
+		SecCnt = Plus1Sec;
 	}
 }
 
@@ -77,20 +64,8 @@ static uchar    bytesRemaining;
  */
 uchar   usbFunctionRead(uchar *data, uchar len)
 {
-		//speedometer
-		//unsigned char currentRPS = (T0_CLK/4) / counterRPS;
-		//unsigned int currentRPS = 0x1234;
-		//unsigned int currentRPS = counterRPS;
-		data[0] = interval;
-		//data[1] = currentRPS >> 8;
+		data[0] = TachoCaptureOut;
 		return 2;
-		
-    /*if(len > bytesRemaining)
-        len = bytesRemaining;
-    eeprom_read_block(data, (uchar *)0 + currentAddress, len);
-    currentAddress += len;
-    bytesRemaining -= len;
-    return len;*/
 }
 
 /* usbFunctionWrite() is called when the host sends a chunk of data to the
@@ -156,7 +131,7 @@ int main(void)
     usbDeviceConnect();
 		
 		LED_PORT_DDR &= ~_BV(LED_BIT);   // make the LED bit an input 
-    TCCR0B = 0x03;// 1:8 presc. 
+    TCCR0B = 0x03;//0x02, 1:8. 0x03, 1:64 presc. 
 		TCNT0 =0;
 		TIMSK= 1 << TOIE0; //unmark Timer 0 overflow interrupt
    
@@ -164,6 +139,11 @@ int main(void)
     for(;;){                /* main event loop */
         wdt_reset();
         usbPoll();
+				if(NewSecond) {
+					NewSecond = false;
+					TachoCaptureOut = TachoCapture;
+					TachoCapture = 0;
+				}
     }
     return 0;
 }

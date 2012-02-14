@@ -1,6 +1,5 @@
-#define LED_PORT_DDR        DDRB
-#define LED_PORT_OUTPUT     PORTB
-#define LED_BIT             4
+#define TACH_BIT            0 //PB0, wire 5
+#define PWM_BIT             4 //PB4, wire 3
 #define T0_CLK  16113
 #define PIN_STEADY_THRESHOLD 6 
 #define Plus1Sec 1000 // 1m/1000um
@@ -20,10 +19,11 @@ volatile bool	  NewSecond;
 volatile unsigned long TachoDebounce = 0;
 volatile unsigned int TachoCapture = 0;
 volatile unsigned int TachoCaptureOut = 0;
+volatile unsigned int PWMDuty = 0;
 
 ISR(TIM0_OVF_vect) { //one round is 128um(1:8), 1000um(1:64)
 	TCNT0 =0;
-	if(PINB & _BV(LED_BIT)) {
+	if(PINB & _BV(TACH_BIT)) {
 		if(TachoDebounce != 255) TachoDebounce++;			// count up if the input is high
 	} else
 		TachoDebounce = 0;									// reset the count if the input is low
@@ -77,7 +77,8 @@ uchar   usbFunctionWrite(uchar *data, uchar len)
         return 1;               /* end of transfer */
     if(len > bytesRemaining)
         len = bytesRemaining;
-    eeprom_write_block(data, (uchar *)0 + currentAddress, len);
+    //eeprom_write_block(data, (uchar *)0 + currentAddress, len);
+		PWMDuty = data;
     currentAddress += len;
     bytesRemaining -= len;
     return bytesRemaining == 0; /* return 1 if this was the last chunk */
@@ -130,10 +131,20 @@ int main(void)
     }
     usbDeviceConnect();
 		
-		LED_PORT_DDR &= ~_BV(LED_BIT);   // make the LED bit an input 
+		//tach
+		DDRB &= ~_BV(TACH_BIT); 
+
+		//set timer 0
     TCCR0B = 0x03;//0x02, 1:8. 0x03, 1:64 presc. 
 		TCNT0 =0;
 		TIMSK= 1 << TOIE0; //unmark Timer 0 overflow interrupt
+
+		//set PWM. see http://aquaticus.info/pwm
+		DDRB |= _BV(PB4); //set as output
+		TCCR1 = (0<<COM1A1)|(0<<COM1A0)|(0<<PWM1A)|(1<<CS10); 
+   	GTCCR = (1<<PWM1B)|(1<<COM0B1)|(0<<COM0B0); 
+   	OCR1C = 255; 	
+		OCR1B=128; 	
    
     sei();
     for(;;){                /* main event loop */
@@ -144,6 +155,7 @@ int main(void)
 					TachoCaptureOut = TachoCapture;
 					TachoCapture = 0;
 				}
+				OCR1B = PWMDuty;
     }
     return 0;
 }

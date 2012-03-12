@@ -9,15 +9,15 @@
 
 #to make at Mac, use 'sudo port install avr-libc' and 'sudo port install avrdude'
 
-DEVICE  = attiny45
-F_CPU   = 16500000	# in Hz
-FUSE_L  = 0xe1
+DEVICE  =	atmega48
+F_CPU   = 16000000	# in Hz
 # see below for fuse values for particular devices
-FUSE_H  = 0xdd
+FUSE_L  = 0xdf
+FUSE_H  = 0xde
 AVRDUDE = avrdude -c usbtiny -P usb -p $(DEVICE) # edit this line for your programmer
 
 CFLAGS  = -Iusbdrv -I. -Ilibs-device -DDEBUG_LEVEL=0
-OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o libs-device/osccal.o
+OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o
 
 COMPILE = avr-gcc -Wall -Os -DF_CPU=$(F_CPU) $(CFLAGS) -mmcu=$(DEVICE)
 
@@ -126,7 +126,7 @@ flash: main.hex
 
 # rule for deleting dependent files (those which can be built by Make):
 clean:
-	rm -f main.hex main.lst main.obj main.cof main.list main.map main.eep.hex main.elf *.o usbdrv/*.o main.s usbdrv/oddebug.s usbdrv/usbdrv.s  libs-device/osccal.o
+	rm -f main.hex main.lst main.obj main.cof main.list main.map main.eep.hex main.elf *.o usbdrv/*.o main.s usbdrv/oddebug.s usbdrv/usbdrv.s
 
 # Generic rule for compiling C files:
 .c.o:

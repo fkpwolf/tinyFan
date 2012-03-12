@@ -10,6 +10,7 @@
 #include <util/delay.h>     /* for _delay_ms() */
 #include <avr/eeprom.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <avr/pgmspace.h>   /* required by usbdrv.h */
 #include "usbdrv.h"
@@ -20,7 +21,7 @@ volatile unsigned long TachoDebounce = 0;
 volatile unsigned int TachoCapture = 0;
 volatile unsigned int TachoCaptureOut = 0;
 volatile unsigned int PWMDuty = 0;
-
+/*
 ISR(TIM0_OVF_vect) { //one round is 128um(1:8), 1000um(1:64)
 	TCNT0 =0;
 	if(PINB & _BV(TACH_BIT)) {
@@ -33,6 +34,7 @@ ISR(TIM0_OVF_vect) { //one round is 128um(1:8), 1000um(1:64)
 		SecCnt = Plus1Sec;
 	}
 }
+*/
 
 /* ----------------------------- USB interface ----------------------------- */
 
@@ -57,6 +59,7 @@ PROGMEM char usbHidReportDescriptor[22] = {    /* USB report descriptor */
 static uchar    currentAddress;
 static uchar    bytesRemaining;
 
+static uchar 		command[128];
 /* ------------------------------------------------------------------------- */
 
 /* usbFunctionRead() is called when the host requests a chunk of data from
@@ -64,8 +67,15 @@ static uchar    bytesRemaining;
  */
 uchar   usbFunctionRead(uchar *data, uchar len)
 {
-		data[0] = TachoCaptureOut;
-		return 2;
+		//data[0] = TachoCaptureOut;
+		//return 2;
+  	if(len > bytesRemaining)
+        len = bytesRemaining;
+		strncpy(data, command + currentAddress, len);
+    currentAddress += len;
+    bytesRemaining -= len;
+    return len;
+
 }
 
 /* usbFunctionWrite() is called when the host sends a chunk of data to the
@@ -73,12 +83,15 @@ uchar   usbFunctionRead(uchar *data, uchar len)
  */
 uchar   usbFunctionWrite(uchar *data, uchar len)
 {
-    if(bytesRemaining == 0)
-        return 1;               /* end of transfer */
+    if(bytesRemaining == 0){
+			  return 1;               /* end of transfer */
+		}
     if(len > bytesRemaining)
         len = bytesRemaining;
-    //eeprom_write_block(data, (uchar *)0 + currentAddress, len);
-		PWMDuty = data;
+		strncpy(command + currentAddress, data, len);
+		//PWMDuty = data;
+		OCR1A = command[0];
+		OCR0B = command[1];
     currentAddress += len;
     bytesRemaining -= len;
     return bytesRemaining == 0; /* return 1 if this was the last chunk */
@@ -131,6 +144,8 @@ int main(void)
     }
     usbDeviceConnect();
 		
+		memset(command, 1, 100); //for debug
+/*		
 		//tach
 		DDRB &= ~_BV(TACH_BIT); 
 
@@ -138,24 +153,31 @@ int main(void)
     TCCR0B = 0x03;//0x02, 1:8. 0x03, 1:64 presc. 
 		TCNT0 =0;
 		TIMSK= 1 << TOIE0; //unmark Timer 0 overflow interrupt
-
+*/
 		//set PWM. see http://aquaticus.info/pwm
-		DDRB |= _BV(PB4); //set as output
-		TCCR1 = (0<<COM1A1)|(0<<COM1A0)|(0<<PWM1A)|(1<<CS10); 
-   	GTCCR = (1<<PWM1B)|(1<<COM0B1)|(0<<COM0B0); 
-   	OCR1C = 255; 	
-		OCR1B=128; 	
+		DDRD |= _BV(PD5); //set as output. FAN1 PWM
+		TCCR0A |= _BV(WGM01) | _BV(WGM00); 	
+		TCCR0B |= _BV(CS01);
+		TCCR0A |= _BV(COM0B1);
+		OCR0B=20; 	
+		
+		//FAN3 pwm
+		DDRB |= _BV(PB1); 
+		TCCR1A |= _BV(WGM10);
+		TCCR1B |= _BV(CS11) | _BV(CS10); //1:64
+		TCCR1A |= _BV(COM1A1);
+		OCR1A = 125;
    
     sei();
     for(;;){                /* main event loop */
         wdt_reset();
         usbPoll();
-				if(NewSecond) {
+		/*		if(NewSecond) {
 					NewSecond = false;
 					TachoCaptureOut = TachoCapture;
 					TachoCapture = 0;
 				}
-				OCR1B = PWMDuty;
+				OCR1B = PWMDuty;*/
     }
     return 0;
 }

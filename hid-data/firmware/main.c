@@ -1,7 +1,4 @@
-#define TACH_BIT            0 //PB0, wire 5
-#define PWM_BIT             4 //PB4, wire 3
-#define T0_CLK  16113
-#define PIN_STEADY_THRESHOLD 6 
+#define TACH_BIT            0 //PB0, fan1
 #define Plus1Sec 1000 // 1m/1000um
 
 #include <avr/io.h>
@@ -17,24 +14,30 @@
 /* ------------------------------------------------------------------------ */
 volatile unsigned long SecCnt = Plus1Sec;
 volatile bool	  NewSecond;
-volatile unsigned long TachoDebounce = 0;
-volatile unsigned int TachoCapture = 0;
-volatile unsigned int TachoCaptureOut = 0;
-volatile unsigned int PWMDuty = 0;
-/*
-ISR(TIM0_OVF_vect) { //one round is 128um(1:8), 1000um(1:64)
-	TCNT0 =0;
-	if(PINB & _BV(TACH_BIT)) {
-		if(TachoDebounce != 255) TachoDebounce++;			// count up if the input is high
+volatile unsigned long TachoDebounce[4];
+volatile unsigned int TachoCapture[4];
+volatile unsigned int TachoCaptureOut[4];
+
+ISR(TIMER2_OVF_vect) { //one tick is 1000um(1:64). Even 100um will break usb!
+	TCNT2 = 6; //count 250 times
+	if(PINB & _BV(TACH_BIT)) { //fan1
+		if(TachoDebounce[0] != 255) TachoDebounce[0]++;			// count up if the input is high
 	} else
-		TachoDebounce = 0;									// reset the count if the input is low
-	if(TachoDebounce == 4) TachoCapture++;	//why TachoDebounce'++' here?
+		TachoDebounce[0] = 0;									// reset the count if the input is low
+	if(TachoDebounce[0] == 4) TachoCapture[0]++;	//why TachoDebounce'++' here?
+	if(PIND & _BV(PD3)) {  //fan3      //this approach take more stack than 'for'???
+		if(TachoDebounce[2] != 255) TachoDebounce[2]++;			
+	} else
+		TachoDebounce[2] = 0;									
+	if(TachoDebounce[2] == 4) TachoCapture[2]++;	
+
+
 	if(--SecCnt == 0) {
 		NewSecond = true;
 		SecCnt = Plus1Sec;
 	}
 }
-*/
+
 
 /* ----------------------------- USB interface ----------------------------- */
 
@@ -67,15 +70,20 @@ static uchar 		command[128];
  */
 uchar   usbFunctionRead(uchar *data, uchar len)
 {
-		//data[0] = TachoCaptureOut;
-		//return 2;
-  	if(len > bytesRemaining)
+		data[0] = TachoCaptureOut[0];
+		data[1] = TachoCaptureOut[1];
+		data[2] = TachoCaptureOut[2];
+		data[3] = TachoCaptureOut[3];
+		return 4;
+
+		//for debug
+  	/*if(len > bytesRemaining)
         len = bytesRemaining;
 		strncpy(data, command + currentAddress, len);
     currentAddress += len;
     bytesRemaining -= len;
     return len;
-
+		*/
 }
 
 /* usbFunctionWrite() is called when the host sends a chunk of data to the
@@ -89,7 +97,6 @@ uchar   usbFunctionWrite(uchar *data, uchar len)
     if(len > bytesRemaining)
         len = bytesRemaining;
 		strncpy(command + currentAddress, data, len);
-		//PWMDuty = data;
 		OCR1A = command[0];
 		OCR0B = command[1];
     currentAddress += len;
@@ -145,39 +152,55 @@ int main(void)
     usbDeviceConnect();
 		
 		memset(command, 1, 100); //for debug
-/*		
-		//tach
-		DDRB &= ~_BV(TACH_BIT); 
-
-		//set timer 0
-    TCCR0B = 0x03;//0x02, 1:8. 0x03, 1:64 presc. 
-		TCNT0 =0;
-		TIMSK= 1 << TOIE0; //unmark Timer 0 overflow interrupt
-*/
-		//set PWM. see http://aquaticus.info/pwm
-		DDRD |= _BV(PD5); //set as output. FAN1 PWM
+		
+		//fan1 & fan2 PWM. see http://aquaticus.info/pwm
+		DDRD |= _BV(PD5);
 		TCCR0A |= _BV(WGM01) | _BV(WGM00); 	
-		TCCR0B |= _BV(CS01);
+		//TCCR0B |= _BV(CS01);
+		TCCR0B |= _BV(CS01) | _BV(CS00);
 		TCCR0A |= _BV(COM0B1);
 		OCR0B=20; 	
-		
-		//FAN3 pwm
+
+		//FAN3 & fan4 pwm
 		DDRB |= _BV(PB1); 
 		TCCR1A |= _BV(WGM10);
 		TCCR1B |= _BV(CS11) | _BV(CS10); //1:64
 		TCCR1A |= _BV(COM1A1);
 		OCR1A = 125;
+
+		//tach pin init
+		DDRB &= ~_BV(PB0); //fan1 
+		PORTB |= _BV(PB0); //pull up
+		DDRD &= ~_BV(PD3); //fan3
+		PORTD |= _BV(PD3);
+
+		//use time2 to tick. can reuse this timer for PWM?
+		//timer2's overflow is special. ref http://www.avrfreaks.net/index.php?name=PNphpBB2&file=printview&t=84197
+ 		ASSR |= (1<<EXCLK); 
+   	ASSR |= (1<<AS2); 
+		TCCR2B |= _BV(CS22);//1:64
+		while (ASSR & (1<<TCR2BUB)); 
+		TCNT2 = 6;
+		TIMSK2= 1 << TOIE2;
+		
+		//turn on led
+		DDRC |= _BV(PC2); //output
+		PORTC |= _BV(PC2); //set to 1
    
     sei();
     for(;;){                /* main event loop */
         wdt_reset();
         usbPoll();
-		/*		if(NewSecond) {
+				if(NewSecond) {
 					NewSecond = false;
-					TachoCaptureOut = TachoCapture;
-					TachoCapture = 0;
+					unsigned int;
+					for( i = 0; i < 4; i++){
+						TachoCaptureOut[i] = TachoCapture[i];
+						TachoCapture[i] = 0;
+					}
+					
+					PORTC ^= _BV(PC2); //toggle LED
 				}
-				OCR1B = PWMDuty;*/
     }
     return 0;
 }

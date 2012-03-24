@@ -153,18 +153,17 @@ int main(void)
 		
 		memset(command, 1, 100); //for debug
 		
-		//fan1 & fan2 PWM. see http://aquaticus.info/pwm
+		//fan1 & fan2 PWM. time0 see http://aquaticus.info/pwm
 		DDRD |= _BV(PD5);
-		TCCR0A |= _BV(WGM01) | _BV(WGM00); 	
-		//TCCR0B |= _BV(CS01);
-		TCCR0B |= _BV(CS01) | _BV(CS00);
+		TCCR0A |= _BV(WGM00); 	
+		TCCR0B |= _BV(CS00); //1:1
 		TCCR0A |= _BV(COM0B1);
-		OCR0B=20; 	
+		OCR0B=125; 	
 
-		//FAN3 & fan4 pwm
+		//FAN3 & fan4 pwm. time1
 		DDRB |= _BV(PB1); 
 		TCCR1A |= _BV(WGM10);
-		TCCR1B |= _BV(CS11) | _BV(CS10); //1:64
+		TCCR1B |= _BV(CS10) ; //1:1
 		TCCR1A |= _BV(COM1A1);
 		OCR1A = 125;
 

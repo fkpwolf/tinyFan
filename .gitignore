@@ -54,3 +54,11 @@ hid-data/firmware/main.elf
 hid-data/firmware/main.hex
 
 hid-data/commandline/hidtool.o
+
+hid-data/firmware/main.elf
+
+hid-data/firmware/main.elf
+
+hid-data/firmware/main.hex
+
+hid-data/firmware/main.o

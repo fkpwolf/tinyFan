@@ -14,7 +14,8 @@ F_CPU   = 16000000	# in Hz
 # see below for fuse values for particular devices
 FUSE_L  = 0xdf
 FUSE_H  = 0xde
-AVRDUDE = avrdude -c usbtiny -P usb -p $(DEVICE) # edit this line for your programmer
+AVRDUDE = avrdude -c usbtiny -P usb -p $(DEVICE) -V
+#AVRDUDE = avrdude -c dragon_isp -P usb -p $(DEVICE) -V 
 
 CFLAGS  = -Iusbdrv -I. -Ilibs-device -DDEBUG_LEVEL=0
 OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o

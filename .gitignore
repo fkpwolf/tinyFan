@@ -62,3 +62,9 @@ hid-data/firmware/main.elf
 hid-data/firmware/main.hex
 
 hid-data/firmware/main.o
+
+hid-data/firmware/usbdrv/usbdrv.c
+
+hid-data/firmware/main.hex
+
+hid-data/firmware/main.o

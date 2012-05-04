@@ -1,0 +1,3 @@
+\\vmware-host\Shared Folders\vm-share\open-hardware-monitor-tinyfan\Bin\Release\OpenHardwareMonitorLib.dll
+\\vmware-host\Shared Folders\vm-share\open-hardware-monitor-tinyfan\obj\Release\ResolveAssemblyReference.cache
+\\vmware-host\Shared Folders\vm-share\open-hardware-monitor-tinyfan\obj\Release\OpenHardwareMonitorLib.dll

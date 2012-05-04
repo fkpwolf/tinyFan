@@ -1,5 +1,8 @@
-#define TACH_BIT            0 //PB0, fan1
-#define Plus1Sec 1000 // 1m/1000um
+#define Plus1Sec 1000 // 1m/1000um 
+#define COMMAND_SET_FAN_DUTY  123
+#define COMMAND_SET_FAN_MODE  124
+#define FAN_MODE_3PIN 33
+#define FAN_MODE_4PIN 44 
 
 #include <avr/io.h>
 #include <avr/wdt.h>
@@ -20,16 +23,16 @@ volatile unsigned int TachoCaptureOut[4];
 
 ISR(TIMER2_OVF_vect) { //one tick is 1000um(1:64). Even 100um will break usb!
 	TCNT2 = 6; //count 250 times
-	if(PINB & _BV(TACH_BIT)) { //fan1
-		if(TachoDebounce[0] != 255) TachoDebounce[0]++;			// count up if the input is high
+	if(PINB & _BV(PB0)) { //fan3
+		if(TachoDebounce[2] != 255) TachoDebounce[2]++;			// count up if the input is high
 	} else
-		TachoDebounce[0] = 0;									// reset the count if the input is low
-	if(TachoDebounce[0] == 4) TachoCapture[0]++;	//why TachoDebounce'++' here?
-	if(PIND & _BV(PD3)) {  //fan3      //this approach take more stack than 'for'???
-		if(TachoDebounce[2] != 255) TachoDebounce[2]++;			
+		TachoDebounce[2] = 0;									// reset the count if the input is low
+	if(TachoDebounce[2] == 4) TachoCapture[2]++;	//why TachoDebounce'++' here?
+	if(PIND & _BV(PD1)) {  //fan1      //this approach take more stack than 'for'???
+		if(TachoDebounce[0] != 255) TachoDebounce[0]++;			
 	} else
-		TachoDebounce[2] = 0;									
-	if(TachoDebounce[2] == 4) TachoCapture[2]++;	
+		TachoDebounce[0] = 0;									
+	if(TachoDebounce[0] == 4) TachoCapture[0]++;	
 
 
 	if(--SecCnt == 0) {
@@ -97,9 +100,30 @@ uchar   usbFunctionWrite(uchar *data, uchar len)
     if(len > bytesRemaining)
         len = bytesRemaining;
 		strncpy(command + currentAddress, data, len);
-		OCR1A = command[0];
-		OCR0B = command[1];
-    currentAddress += len;
+		if(command[0] == COMMAND_SET_FAN_DUTY ) {
+			OCR1B = command[1];
+			OCR1A = command[2];
+			OCR0B = command[3];
+			OCR0A = command[4];
+		} else if( command[0] == COMMAND_SET_FAN_MODE) {
+			if(command[1] == FAN_MODE_3PIN)
+					PORTC &= ~_BV(PC4); //Fan1. set to 0
+			else if(command[1] == FAN_MODE_4PIN)
+					PORTC |= _BV(PC4); //set to 1
+
+			if(command[2] == FAN_MODE_3PIN)
+					PORTC &= ~_BV(PC5); // Fan2. set to 0
+			else if(command[2] == FAN_MODE_4PIN)
+					PORTC |= _BV(PC5); //set to 1
+
+			if(command[3] == FAN_MODE_3PIN)
+					PORTC &= ~_BV(PC3); //Fan3. set to 0
+			else if(command[3] == FAN_MODE_4PIN)
+					PORTC |= _BV(PC3); //set to 1
+
+		}    
+
+		currentAddress += len;
     bytesRemaining -= len;
     return bytesRemaining == 0; /* return 1 if this was the last chunk */
 }
@@ -153,26 +177,44 @@ int main(void)
 		
 		memset(command, 1, 100); //for debug
 		
-		//fan1 & fan2 PWM. time0 see http://aquaticus.info/pwm
-		DDRD |= _BV(PD5);
+		/******PWM setting. ref  see http://aquaticus.info/pwm*/
+		//Time0 pwm(PD5 & PD6)
+		DDRD |= _BV(PD5);//fan3
+		DDRD |= _BV(PD6);//fan4
 		TCCR0A |= _BV(WGM00); 	
 		TCCR0B |= _BV(CS00); //1:1
-		TCCR0A |= _BV(COM0B1);
-		OCR0B=125; 	
+		TCCR0A |= _BV(COM0B1) | _BV(COM0A1);
+		OCR0B=125; 	//fan3
+		OCR0A=125; 	//fan4
 
-		//FAN3 & fan4 pwm. time1
-		DDRB |= _BV(PB1); 
+		//Time1 pwm(PB1 & PB2)
+		DDRB |= _BV(PB1); //fan2
+		DDRB |= _BV(PB2); //fan1
 		TCCR1A |= _BV(WGM10);
 		TCCR1B |= _BV(CS10) ; //1:1
-		TCCR1A |= _BV(COM1A1);
-		OCR1A = 125;
+		TCCR1A |= _BV(COM1A1) | _BV(COM1B1);
+		OCR1A = 125; //fan2
+		OCR1B = 125; //fan1
 
-		//tach pin init
-		DDRB &= ~_BV(PB0); //fan1 
-		PORTB |= _BV(PB0); //pull up
-		DDRD &= ~_BV(PD3); //fan3
+		//fan mode. default is 4pin
+		DDRC |= _BV(PC3); 
+		DDRC |= _BV(PC4);
+		DDRC |= _BV(PC5);
+		PORTC |= _BV(PC3); //set to 1
+		PORTC |= _BV(PC4); //set to 1
+		PORTC |= _BV(PC5); //set to 1
+
+		//tach reading pin init
+		DDRD &= ~_BV(PD1); //Fan1
+		PORTD |= _BV(PD1); //pull-up
+		DDRD &= ~_BV(PD3); //Fan2
 		PORTD |= _BV(PD3);
+		DDRB &= ~_BV(PB0); //Fan3 
+		PORTB |= _BV(PB0); 
+		DDRB &= ~_BV(PB3); //Fan4
+		PORTB |= _BV(PB3);
 
+	
 		//use time2 to tick. can reuse this timer for PWM?
 		//timer2's overflow is special. ref http://www.avrfreaks.net/index.php?name=PNphpBB2&file=printview&t=84197
  		ASSR |= (1<<EXCLK); 
@@ -184,7 +226,9 @@ int main(void)
 		
 		//turn on led
 		DDRC |= _BV(PC2); //output
+		DDRC |= _BV(PC1); //output
 		PORTC |= _BV(PC2); //set to 1
+		PORTC |= _BV(PC1); //set to 1
    
     sei();
     for(;;){                /* main event loop */
@@ -198,7 +242,8 @@ int main(void)
 						TachoCapture[i] = 0;
 					}
 					
-					PORTC ^= _BV(PC2); //toggle LED
+					//PORTC ^= _BV(PC2); //toggle LED
+					//PORTC ^= _BV(PC1); //toggle LED
 				}
     }
     return 0;

@@ -16,3 +16,6 @@
 \\vmware-host\Shared Folders\Documents\tinyFan\open-hardware-monitor-tinyfan\Bin\Debug\OpenHardwareMonitor.exe.config
 \\vmware-host\Shared Folders\Documents\tinyFan\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.exe
 \\vmware-host\Shared Folders\Documents\tinyFan\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.pdb
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\Bin\Debug\OpenHardwareMonitor.exe.config
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.exe
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.pdb

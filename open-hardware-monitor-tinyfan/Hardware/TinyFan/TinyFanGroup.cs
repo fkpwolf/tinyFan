@@ -32,7 +32,7 @@ namespace OpenHardwareMonitor.Hardware.TinyFan
 
         public void Close()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 }

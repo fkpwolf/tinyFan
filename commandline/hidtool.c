@@ -107,6 +107,12 @@ int         err;
             fprintf(stderr, "error reading data: %s\n", usbErrorMessage(err));
         }else{
             hexdump(buffer + 1, sizeof(buffer) - 1);
+						//my way to show buffer
+						int i;
+ 			   		for(i = 0; i < 4; i++){
+							int rpm =  (buffer[i + 1] & 0xff) * 60 / 2;
+        			fprintf(stdout, "Fan%d: % 5dRPM\n", i, rpm);
+    				}
         }
     }else if(strcasecmp(argv[1], "write") == 0){
         int i, pos;
@@ -114,6 +120,19 @@ int         err;
         for(pos = 1, i = 2; i < argc && pos < sizeof(buffer); i++){
             pos += hexread(buffer + pos, argv[i], sizeof(buffer) - pos);
         }
+				int j;
+				for (j=0; j < 10; j++)
+						fprintf(stdout, "buffer value is:%d\n", buffer[j]);
+				/*	
+      	memset(buffer, 0, sizeof(buffer));
+				buffer[1] =  123;
+      	for(i = 0; i < 4; i++){
+					buffer[i + 2] =  120;
+      	}
+				printf("after my modify, now vlaue is:\n");
+				for (j=0; j < 10; j++)
+						fprintf(stdout, "buffer value is:%d\n", buffer[j]);
+				*/
         if((err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0)   /* add a dummy report ID */
             fprintf(stderr, "error writing data: %s\n", usbErrorMessage(err));
     }else{
@@ -123,5 +142,4 @@ int         err;
     usbhidCloseDevice(dev);
     return 0;
 }
-
 /* ------------------------------------------------------------------------- */

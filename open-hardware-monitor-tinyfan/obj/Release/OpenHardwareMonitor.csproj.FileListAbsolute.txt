@@ -10,3 +10,15 @@
 \\vmware-host\Shared Folders\vm-share\open-hardware-monitor-tinyfan\obj\Release\ResGen.read.1.tlog
 \\vmware-host\Shared Folders\vm-share\open-hardware-monitor-tinyfan\obj\Release\ResGen.write.1.tlog
 \\vmware-host\Shared Folders\vm-share\open-hardware-monitor-tinyfan\obj\Release\OpenHardwareMonitor.exe
+Z:\open-hardware-monitor-tinyfan\Bin\Release\OpenHardwareMonitor.exe.config
+Z:\open-hardware-monitor-tinyfan\Bin\Release\OpenHardwareMonitor.exe
+Z:\open-hardware-monitor-tinyfan\Bin\Release\Aga.Controls.dll
+Z:\open-hardware-monitor-tinyfan\obj\Release\ResolveAssemblyReference.cache
+Z:\open-hardware-monitor-tinyfan\obj\Release\OpenHardwareMonitor.GUI.AboutBox.resources
+Z:\open-hardware-monitor-tinyfan\obj\Release\OpenHardwareMonitor.GUI.ParameterForm.resources
+Z:\open-hardware-monitor-tinyfan\obj\Release\OpenHardwareMonitor.GUI.CrashForm.resources
+Z:\open-hardware-monitor-tinyfan\obj\Release\OpenHardwareMonitor.GUI.MainForm.resources
+Z:\open-hardware-monitor-tinyfan\obj\Release\OpenHardwareMonitor.GUI.ReportForm.resources
+Z:\open-hardware-monitor-tinyfan\obj\Release\ResGen.read.1.tlog
+Z:\open-hardware-monitor-tinyfan\obj\Release\ResGen.write.1.tlog
+Z:\open-hardware-monitor-tinyfan\obj\Release\OpenHardwareMonitor.exe

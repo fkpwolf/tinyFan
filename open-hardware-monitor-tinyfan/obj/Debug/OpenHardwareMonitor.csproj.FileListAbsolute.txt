@@ -19,3 +19,30 @@
 \\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\Bin\Debug\OpenHardwareMonitor.exe.config
 \\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.exe
 \\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.pdb
+Z:\open-hardware-monitor-tinyfan\Bin\Debug\OpenHardwareMonitor.exe.config
+Z:\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.exe
+Z:\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.pdb
+Z:\open-hardware-monitor-tinyfan\Bin\Debug\OpenHardwareMonitor.exe
+Z:\open-hardware-monitor-tinyfan\Bin\Debug\OpenHardwareMonitor.pdb
+Z:\open-hardware-monitor-tinyfan\Bin\Debug\Aga.Controls.dll
+Z:\open-hardware-monitor-tinyfan\Bin\Debug\OpenHardwareMonitorLib.pdb
+Z:\open-hardware-monitor-tinyfan\obj\Debug\ResolveAssemblyReference.cache
+Z:\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.GUI.AboutBox.resources
+Z:\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.GUI.ParameterForm.resources
+Z:\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.GUI.CrashForm.resources
+Z:\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.GUI.MainForm.resources
+Z:\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.GUI.ReportForm.resources
+Z:\open-hardware-monitor-tinyfan\obj\Debug\ResGen.read.1.tlog
+Z:\open-hardware-monitor-tinyfan\obj\Debug\ResGen.write.1.tlog
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\Bin\Debug\OpenHardwareMonitor.exe
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\Bin\Debug\OpenHardwareMonitor.pdb
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\Bin\Debug\Aga.Controls.dll
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\Bin\Debug\OpenHardwareMonitorLib.pdb
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\obj\Debug\ResolveAssemblyReference.cache
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.GUI.AboutBox.resources
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.GUI.ParameterForm.resources
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.GUI.CrashForm.resources
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.GUI.MainForm.resources
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\obj\Debug\OpenHardwareMonitor.GUI.ReportForm.resources
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\obj\Debug\ResGen.read.1.tlog
+\\vmware-host\Shared Folders\open-hardware-monitor-tinyfan\obj\Debug\ResGen.write.1.tlog

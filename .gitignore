@@ -1,11 +1,13 @@
 /open-hardware-monitor-tinyfan/obj/**/*
-
 /open-hardware-monitor-tinyfan/Bin/**/*
 
 /commandline/*.dll
-
 /commandline/*.o
-
 /commandline/*.exe
+
+/firmware/**/*.o
+/firmware/**/*.hex
+/firmware/**/*.elf
+
 .DS_Store
 **/*.swp

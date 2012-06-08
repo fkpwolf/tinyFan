@@ -62,7 +62,7 @@ namespace OpenHardwareMonitor.GUI {
     }
 
     public SensorNode(ISensor sensor, PersistentSettings settings, 
-      UnitManager unitManager) : base() {      
+      UnitManager unitManager) : base() {  
       this.sensor = sensor;
       this.settings = settings;
       this.unitManager = unitManager;
@@ -74,6 +74,7 @@ namespace OpenHardwareMonitor.GUI {
         case SensorType.Fan: format = "{0:F0} RPM"; break;
         case SensorType.Flow: format = "{0:F0} L/h"; break;
         case SensorType.Control: format = "{0:F1} %"; break;
+        case SensorType.TinyFanControl: format = "{0:F1} %"; break;
         case SensorType.Level: format = "{0:F1} %"; break;
         case SensorType.Power: format = "{0:F1} W"; break;
         case SensorType.Data: format = "{0:F1} GB"; break;
@@ -114,13 +115,34 @@ namespace OpenHardwareMonitor.GUI {
     }
 
     public event EventHandler PlotSelectionChanged;
+    private System.Drawing.Image image;
 
     public ISensor Sensor {
       get { return sensor; }
     }
 
     public string Value {
-      get { return ValueToString(sensor.Value); }
+      get {
+          //Console.WriteLine("---------------sensorNode.getValue----");//it will continue update
+          return ValueToString(sensor.Value); }
+    }
+
+
+    public new System.Drawing.Image Image
+    {
+        get
+        {
+            //fan
+            if (sensor.SensorType.Equals(SensorType.TinyFanControl))
+            {
+               if(sensor.Control.FanMode.Equals(FanMode.Pin3))
+                    this.image = Utilities.EmbeddedResources.GetImage("fan3pin.png");
+                else
+                    this.image = Utilities.EmbeddedResources.GetImage("fan4pin.png");
+            }
+            //fan
+            return this.image;
+        }
     }
 
     public string Min {
@@ -145,6 +167,5 @@ namespace OpenHardwareMonitor.GUI {
     public override int GetHashCode() {
       return sensor.GetHashCode();
     }
-
   }
 }

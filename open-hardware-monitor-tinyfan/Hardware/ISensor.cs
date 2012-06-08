@@ -49,6 +49,7 @@ namespace OpenHardwareMonitor.Hardware {
     Fan, // RPM
     Flow, // L/h
     Control, // %
+    TinyFanControl,
     Level, // %
     Factor, // 1
     Power, // W

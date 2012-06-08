@@ -67,7 +67,7 @@ void get_tach(char* ret, char* resp){
     	}
    }
 	 //usbhidCloseDevice(dev);
-	 strncpy(resp, "finished readd", 128 );
+	 strncpy(resp, "finished read", 128 );
 }
 
 /* ------------------------------------------------------------------------- */

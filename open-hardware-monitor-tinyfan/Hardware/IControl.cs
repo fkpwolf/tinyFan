@@ -42,11 +42,19 @@ namespace OpenHardwareMonitor.Hardware {
     Software
   }
 
+  public enum FanMode
+  {
+      Pin3,
+      Pin4
+  }
+
   public interface IControl {
 
     Identifier Identifier { get; }
 
     ControlMode ControlMode { get; }
+
+    FanMode FanMode { get; }
 
     float SoftwareValue { get; }
 
@@ -57,5 +65,7 @@ namespace OpenHardwareMonitor.Hardware {
 
     void SetSoftware(float value);
 
+
+    void SetTheFanMode(FanMode fanMode);
   }
 }

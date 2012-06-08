@@ -39,7 +39,7 @@ namespace OpenHardwareMonitor.Hardware.TinyFan
                 fans[i] = new Sensor(n, device, SensorType.Fan, this, settings);
                 fans[i].Value = tach[i] * 60 / 2;
                 ActivateSensor(fans[i]);
-                controls[i] = new Sensor(n, device, SensorType.Control, this, settings);
+                controls[i] = new Sensor(n, device, SensorType.TinyFanControl, this, settings);
                 controls[i].Value = 0;
                 Control c = new Control(controls[i], settings, 0, 100);
                 c.ControlModeChanged += (cc) => //copy from SuperIOHardware.cs

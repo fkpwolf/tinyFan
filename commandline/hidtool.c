@@ -111,7 +111,7 @@ int         err;
 						int i;
  			   		for(i = 0; i < 4; i++){
 							int rpm =  (buffer[i + 1] & 0xff) * 60 / 2;
-        			fprintf(stdout, "Fan%d: % 5dRPM\n", i, rpm);
+        			fprintf(stdout, "Fan%d: % 5dRPM\n", i + 1, rpm);
     				}
         }
     }else if(strcasecmp(argv[1], "write") == 0){
@@ -121,9 +121,9 @@ int         err;
             pos += hexread(buffer + pos, argv[i], sizeof(buffer) - pos);
         }
 				int j;
-				for (j=0; j < 10; j++)
+				/*for (j=0; j < 10; j++)
 						fprintf(stdout, "buffer value is:%d\n", buffer[j]);
-				/*	
+					
       	memset(buffer, 0, sizeof(buffer));
 				buffer[1] =  123;
       	for(i = 0; i < 4; i++){

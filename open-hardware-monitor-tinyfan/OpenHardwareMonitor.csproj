@@ -250,6 +250,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="hidtool.dll" />
+    <EmbeddedResource Include="Resources\fan4pin.png" />
+    <EmbeddedResource Include="Resources\fan3pin.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

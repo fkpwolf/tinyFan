@@ -23,17 +23,32 @@ volatile unsigned int TachoCaptureOut[4];
 
 ISR(TIMER2_OVF_vect) { //one tick is 1000um(1:64). Even 100um will break usb!
 	TCNT2 = 6; //count 250 times
-	if(PINB & _BV(PB0)) { //fan3
-		if(TachoDebounce[2] != 255) TachoDebounce[2]++;			// count up if the input is high
-	} else
-		TachoDebounce[2] = 0;									// reset the count if the input is low
-	if(TachoDebounce[2] == 4) TachoCapture[2]++;	//why TachoDebounce'++' here?
+
 	if(PIND & _BV(PD1)) {  //fan1      //this approach take more stack than 'for'???
 		if(TachoDebounce[0] != 255) TachoDebounce[0]++;			
 	} else
 		TachoDebounce[0] = 0;									
 	if(TachoDebounce[0] == 4) TachoCapture[0]++;	
 
+	if(PIND & _BV(PD3)) {  //fan2
+		if(TachoDebounce[1] != 255) TachoDebounce[1]++;			
+	} else
+		TachoDebounce[1] = 0;									
+	if(TachoDebounce[1] == 4) TachoCapture[1]++;	
+
+
+	if(PINB & _BV(PB0)) { //fan3
+		if(TachoDebounce[2] != 255) TachoDebounce[2]++;			// count up if the input is high
+	} else
+		TachoDebounce[2] = 0;									// reset the count if the input is low
+	if(TachoDebounce[2] == 4) TachoCapture[2]++;	//why TachoDebounce'++' here?
+
+	if(PINB & _BV(PB3)) {  //fan4
+		if(TachoDebounce[3] != 255) TachoDebounce[3]++;			
+	} else
+		TachoDebounce[3] = 0;									
+	if(TachoDebounce[3] == 4) TachoCapture[3]++;	
+	
 
 	if(--SecCnt == 0) {
 		NewSecond = true;
@@ -65,7 +80,8 @@ const PROGMEM char usbHidReportDescriptor[22] = {    /* USB report descriptor */
 static uchar    currentAddress;
 static uchar    bytesRemaining;
 
-static uchar 		command[128];
+static uchar 		command[12];
+
 /* ------------------------------------------------------------------------- */
 
 /* usbFunctionRead() is called when the host requests a chunk of data from
@@ -73,20 +89,35 @@ static uchar 		command[128];
  */
 uchar   usbFunctionRead(uchar *data, uchar len)
 {
-		data[0] = TachoCaptureOut[0];
+		data[0] = TachoCaptureOut[0]; //biggest is 256. so Biggest Fan speed is 7000RPM
 		data[1] = TachoCaptureOut[1];
 		data[2] = TachoCaptureOut[2];
 		data[3] = TachoCaptureOut[3];
+		//fan pin mode
+		//why read and write is different?
+		//data[4] =	(PINC & _BV(PC4)) ? 1:0;
+		//data[5] = (PINC & _BV(PC5)) ? 1:0;
+		//data[6] = (PINC & _BV(PC3)) ? 1:0;
+		//data[7] = 1;
+		//duty
+		//readBuffer[3] = TachoCaptureOut[3]; //this lead to all ZERO value
+
+		//readBuffer[8] = OCR1B;
+		//readBuffer[9] = OCR1A;
+		//readBuffer[10] = OCR0B;
+		//readBuffer[11] = OCR0A;
+
 		return 4;
 
-		//for debug
-  	/*if(len > bytesRemaining)
+/*  	if(len > bytesRemaining)
         len = bytesRemaining;
-		strncpy(data, command + currentAddress, len);
+		strncpy(data, readBuffer + currentAddress, len);
     currentAddress += len;
     bytesRemaining -= len;
+		if(bytesRemaining == 0)
+				readBufferDone = false;
     return len;
-		*/
+*/
 }
 
 /* usbFunctionWrite() is called when the host sends a chunk of data to the
@@ -137,12 +168,12 @@ usbRequest_t    *rq = (void *)data;
     if((rq->bmRequestType & USBRQ_TYPE_MASK) == USBRQ_TYPE_CLASS){    /* HID class request */
         if(rq->bRequest == USBRQ_HID_GET_REPORT){  /* wValue: ReportType (highbyte), ReportID (lowbyte) */
             /* since we have only one report type, we can ignore the report-ID */
-            bytesRemaining = 128;
+            bytesRemaining = 12;
             currentAddress = 0;
             return USB_NO_MSG;  /* use usbFunctionRead() to obtain data */
         }else if(rq->bRequest == USBRQ_HID_SET_REPORT){
             /* since we have only one report type, we can ignore the report-ID */
-            bytesRemaining = 128;
+            bytesRemaining = 12;
             currentAddress = 0;
             return USB_NO_MSG;  /* use usbFunctionWrite() to receive data from host */
         }
@@ -175,7 +206,8 @@ int main(void)
     }
     usbDeviceConnect();
 		
-		memset(command, 1, 100); //for debug
+		memset(command, 1, 12); //for debug
+	
 		
 		/******PWM setting. ref  see http://aquaticus.info/pwm*/
 		//Time0 pwm(PD5 & PD6)

@@ -614,8 +614,34 @@ namespace OpenHardwareMonitor.GUI {
               }
             }
             treeContextMenu.MenuItems.Add(controlItem);
+            //fan add
+            if (node.Sensor.SensorType.Equals(SensorType.TinyFanControl))
+            {
+                MenuItem controlModeItem = new MenuItem("Fan Mode");
+                treeContextMenu.MenuItems.Add(controlModeItem);
+                MenuItem Pin3 = new MenuItem("3 Pin Fan");
+                Pin3.Checked = control.FanMode == FanMode.Pin3;
+                Pin3.Click += delegate(object obj, EventArgs args)
+                {
+                    //string[] splits = node.Sensor.Name.Split(new string[] {"-"}, StringSplitOptions.None);
+                    //string sensorName = splits[0];
+                    //node.Text = sensorName + "-3 pin";
+                    control.SetTheFanMode(FanMode.Pin3);
+                };
+                MenuItem Pin4 = new MenuItem("4 Pin Fan");
+                Pin4.Checked = control.FanMode == FanMode.Pin4;
+                Pin4.Click += delegate(object obj, EventArgs args)
+                {
+                    //string[] splits = node.Sensor.Name.Split(new string[] { "-" }, StringSplitOptions.None);
+                    // string sensorName = splits[0];
+                    // node.Text = sensorName + "-4 pin";
+                    control.SetTheFanMode(FanMode.Pin4);
+                };
+                controlModeItem.MenuItems.Add(Pin3);
+                controlModeItem.MenuItems.Add(Pin4);
+            }
+            //fan extend
           }
-
           treeContextMenu.Show(treeView, new Point(m.X, m.Y));
         }
 

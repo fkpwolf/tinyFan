@@ -93,3 +93,28 @@ void set_duty(char* duty, char* resp){
   //usbhidCloseDevice(dev);
 	strncpy(resp, "finished write", 128 );
 }
+
+
+/* ------------------------------------------------------------------------- */
+void set_fan_mode(char* duty, char* resp){
+	strncpy(resp, "init", 128 );
+	usbDevice_t *dev;
+	char  buffer[129]; 
+	int  err;
+	if((dev = openDevice()) == NULL){
+			strncpy(resp, "can't open device", 128 );
+			return;
+	}
+	int i;
+  memset(buffer, 0, sizeof(buffer));
+	buffer[1] =  124;
+  for(i = 0; i < 4; i++){
+		buffer[i + 2] = duty[i];
+  }
+  if((err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) {   /* add a dummy report ID */
+		strncpy(resp, "error writing data", 128 );
+  	return;
+	}
+  //usbhidCloseDevice(dev);
+	strncpy(resp, "finished write", 128 );
+}

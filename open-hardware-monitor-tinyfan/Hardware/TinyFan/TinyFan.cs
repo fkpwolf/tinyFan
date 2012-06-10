@@ -21,6 +21,12 @@ namespace OpenHardwareMonitor.Hardware.TinyFan
             [MarshalAs(UnmanagedType.LPArray)] byte[] response
         );
 
+        [DllImport("hidtool.dll")]
+        private static extern void set_fan_mode(
+            [MarshalAs(UnmanagedType.LPArray)] byte[] duty,
+            [MarshalAs(UnmanagedType.LPArray)] byte[] response
+        );
+
         private readonly Sensor[] fans;
         private readonly Sensor[] controls;
 
@@ -59,6 +65,10 @@ namespace OpenHardwareMonitor.Hardware.TinyFan
                     //if (cc.ControlMode == ControlMode.Software)
                     //    superIO.SetControl(index, (byte)(cc.SoftwareValue * 2.55));
                     this.setTach();
+                };
+                c.FanModeChanged += (cc) =>
+                {
+                    this.setFanPinMode();
                 };
                 controls[i].Control = c;
                 ActivateSensor(controls[i]);
@@ -105,6 +115,20 @@ namespace OpenHardwareMonitor.Hardware.TinyFan
             byte[] response = new byte[400];
             set_duty(duty, response); //write value of all fans. TODO should follow style of NCT677X.cs's WriteByte.
             Console.Out.WriteLine("The return of setTach is:" + System.Text.Encoding.ASCII.GetString(response));
+        }
+
+        private void setFanPinMode()
+        {
+            byte[] duty = new byte[4];
+            for (int i = 0; i < 4; i++)
+            {
+                IControl c = this.controls[i].Control;
+                duty[i] = (byte)(c.FanMode == 0 ? 33 : 44);
+                Console.Out.WriteLine("fan(" + i + ")'s mode is:" + c.FanMode + ", byte:" + duty[i]);
+            }
+            byte[] response = new byte[400];
+            set_fan_mode(duty, response);
+            Console.Out.WriteLine("The return of setFanPinMode is:" + System.Text.Encoding.ASCII.GetString(response));
         }
     }
 }

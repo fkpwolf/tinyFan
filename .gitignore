@@ -11,3 +11,8 @@
 
 .DS_Store
 **/*.swp
+open-hardware-monitor-tinyfan/External/hidtool.dll
+
+open-hardware-monitor-tinyfan/OpenHardwareMonitor.suo
+
+commandline/hiddata.o

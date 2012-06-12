@@ -6,6 +6,7 @@ namespace OpenHardwareMonitor.Hardware.TinyFan
 {
     using System.Runtime.InteropServices;
     using System;
+    using Microsoft.Win32;
 
     internal class TinyFan : Hardware, IDisposable {
 
@@ -46,24 +47,13 @@ namespace OpenHardwareMonitor.Hardware.TinyFan
                 fans[i].Value = tach[i] * 60 / 2;
                 ActivateSensor(fans[i]);
                 controls[i] = new Sensor(n, device, SensorType.TinyFanControl, this, settings);
-                controls[i].Value = 0;
                 Control c = new Control(controls[i], settings, 0, 100);
                 c.ControlModeChanged += (cc) => //copy from SuperIOHardware.cs
                 {
                     Console.WriteLine("fan mode changed.");
-                    /*if (cc.ControlMode == ControlMode.Default)
-                    {
-                        superIO.SetControl(index, null);
-                    }
-                    else
-                    {
-                        superIO.SetControl(index, (byte)(cc.SoftwareValue * 2.55));
-                    }*/
                 };
                 c.SoftwareControlValueChanged += (cc) =>
                 {
-                    //if (cc.ControlMode == ControlMode.Software)
-                    //    superIO.SetControl(index, (byte)(cc.SoftwareValue * 2.55));
                     this.setTach();
                 };
                 c.FanModeChanged += (cc) =>
@@ -72,6 +62,23 @@ namespace OpenHardwareMonitor.Hardware.TinyFan
                 };
                 controls[i].Control = c;
                 ActivateSensor(controls[i]);
+                controls[i].Value = controls[i].Control.SoftwareValue;
+            }
+            //init device, since now device is passive and didn't save setting itself
+            this.setFanPinMode();
+            this.setTach();
+
+            //test.
+            SystemEvents.PowerModeChanged += new PowerModeChangedEventHandler(SystemEvents_PowerModeChanged);
+        }
+
+        private void SystemEvents_PowerModeChanged(object sender,
+                        PowerModeChangedEventArgs e)
+        {
+            if (e.Mode == PowerModes.Resume)
+            {
+                Console.WriteLine("-----------------------I weak from resume");
+                //here need to notify all controls to write value to all kinds of devices
             }
         }
 
@@ -109,8 +116,8 @@ namespace OpenHardwareMonitor.Hardware.TinyFan
             byte[] duty = new byte[4];
             for (int i = 0; i < 4; i++){
                 IControl c = this.controls[i].Control;
-                duty[i] = (byte)(c.SoftwareValue * 2.55);
                 this.controls[i].Value = c.SoftwareValue;
+                duty[i] = (byte)(c.SoftwareValue * 2.55);
             }
             byte[] response = new byte[400];
             set_duty(duty, response); //write value of all fans. TODO should follow style of NCT677X.cs's WriteByte.

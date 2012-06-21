@@ -1,4 +1,5 @@
-
+Lite:
+  Only support PWM Fan, thus the target PCB will be really tiny.
 
 Mac
   to view usb device, use command "system_profiler SPUSBDataType"

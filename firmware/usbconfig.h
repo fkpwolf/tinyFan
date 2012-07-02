@@ -238,6 +238,7 @@ section at the end of this file).
  */
 #define USB_CFG_DEVICE_VERSION  0x00, 0x01
 /* Version number of the device: Minor number first, then major number.
+ * when there is new version of device, updating here. Now it is 1.00
  */
 #define USB_CFG_VENDOR_NAME     'f', 'k', 'p', 'w', 'o', 'l', 'f'
 #define USB_CFG_VENDOR_NAME_LEN 7 

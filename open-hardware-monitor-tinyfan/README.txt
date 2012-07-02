@@ -1,0 +1,1 @@
+1.for real development env, use RELEASE and X86 mode if encounter dll related error.

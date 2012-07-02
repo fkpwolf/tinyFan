@@ -280,7 +280,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
           report.AppendLine();
           return false;
         }
-
+        Console.WriteLine("the LPC chip is:" + chip);
         switch (chip) {
           case Chip.W83627DHG:
           case Chip.W83627DHGP:
@@ -454,6 +454,7 @@ namespace OpenHardwareMonitor.Hardware.LPC {
     #endregion
 
     private void Detect() {
+        Console.WriteLine("-----detect---");
 
       for (int i = 0; i < REGISTER_PORTS.Length; i++) {
         registerPort = REGISTER_PORTS[i];

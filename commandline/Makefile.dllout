@@ -26,7 +26,13 @@ EXE_SUFFIX= .dll
 #USBLIBS = -L/usr/local/lib -lusb
 #EXE_SUFFIX = .exe
 
-CC=				gcc
+#64bit
+#change #include <ddk/hidpi.h> to #include <hidpi.h>
+#CC=			/usr/bin/x86_64-w64-mingw32-gcc
+#32bit, mingw in cygwin. why this work but 64bit not?
+CC= i686-pc-mingw32-gcc
+#mingw
+#CC= gcc
 CFLAGS=			-O -Wall $(USBFLAGS)
 LIBS=			$(USBLIBS)
 

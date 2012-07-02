@@ -74,6 +74,9 @@ namespace OpenHardwareMonitor.GUI {
           case HardwareType.Heatmaster:
             image = Utilities.EmbeddedResources.GetImage("bigng.png");
             break;
+          case HardwareType.TinyFan:
+            image = Utilities.EmbeddedResources.GetImage("bigng.png");
+            break;
           case HardwareType.Mainboard:
             image = Utilities.EmbeddedResources.GetImage("mainboard.png");
             break;

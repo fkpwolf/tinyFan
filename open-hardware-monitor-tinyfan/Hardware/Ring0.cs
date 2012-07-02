@@ -102,7 +102,9 @@ namespace OpenHardwareMonitor.Hardware {
 
     private static bool ExtractDriver(string fileName) {
       string resourceName = "OpenHardwareMonitor.Hardware." +
-        (IntPtr.Size == 4 ? "WinRing0.sys" : "WinRing0x64.sys");
+        //(IntPtr.Size == 4 ? "WinRing0.sys" : "WinRing0x64.sys"); 
+        //this should base on OS rather than Running setting, since the app can only run at 32bit even on 64bit machine(?)
+        (Util.Is64BitOperatingSystem() ? "WinRing0x64.sys" :"WinRing0.sys"); 
 
       string[] names =
         Assembly.GetExecutingAssembly().GetManifestResourceNames();

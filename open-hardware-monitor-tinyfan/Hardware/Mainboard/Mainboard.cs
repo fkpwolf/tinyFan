@@ -72,6 +72,7 @@ namespace OpenHardwareMonitor.Hardware.Mainboard {
 
       ISuperIO[] superIO;
       int p = (int)Environment.OSVersion.Platform;
+
       if ((p == 4) || (p == 128)) {
         this.lmSensors = new LMSensors();
         superIO = lmSensors.SuperIO;

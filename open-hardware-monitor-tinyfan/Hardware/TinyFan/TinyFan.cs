@@ -44,7 +44,7 @@ namespace OpenHardwareMonitor.Hardware.TinyFan
                 int device = 33 + i;
                 string n = "Fan" + (i + 1);
                 fans[i] = new Sensor(n, device, SensorType.Fan, this, settings);
-                fans[i].Value = tach[i] * 60 / 2;
+                //fans[i].Value = tach[i] * 60 / 2;
                 ActivateSensor(fans[i]);
                 controls[i] = new Sensor(n, device, SensorType.TinyFanControl, this, settings);
                 Control c = new Control(controls[i], settings, 0, 100);
@@ -136,6 +136,16 @@ namespace OpenHardwareMonitor.Hardware.TinyFan
             byte[] response = new byte[400];
             set_fan_mode(duty, response);
             Console.Out.WriteLine("The return of setFanPinMode is:" + System.Text.Encoding.ASCII.GetString(response));
+        }
+
+        public override string GetReport()
+        {
+            StringBuilder r = new StringBuilder();
+
+            r.AppendLine("TinyFan");
+            r.AppendLine();
+
+            return r.ToString();
         }
     }
 }

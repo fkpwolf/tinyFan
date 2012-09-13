@@ -1,8 +1,13 @@
 #define Plus1Sec 1000 // 1m/1000um 
 #define COMMAND_SET_FAN_DUTY  123
 #define COMMAND_SET_FAN_MODE  124
+#define COMMAND_SET_SN  125
 #define FAN_MODE_3PIN 33
 #define FAN_MODE_4PIN 44 
+
+#define SERIAL_NUMBER_LENGTH 6 // the number of characters required for your serial number
+
+static int  serialNumberDescriptor[SERIAL_NUMBER_LENGTH + 1];
 
 #include <avr/io.h>
 #include <avr/wdt.h>
@@ -87,6 +92,18 @@ static uchar 		command[12];
 /* usbFunctionRead() is called when the host requests a chunk of data from
  * the device. For more information see the documentation in usbdrv/usbdrv.h.
  */
+
+uchar   usbFunctionRead_debug(uchar *data, uchar len)
+{
+    if(len > bytesRemaining)
+        len = bytesRemaining;
+    eeprom_read_block(data, (uchar *)0 + currentAddress, len);
+    currentAddress += len;
+    bytesRemaining -= len;
+    return len;
+}
+
+
 uchar   usbFunctionRead(uchar *data, uchar len)
 {
 		data[0] = TachoCaptureOut[0]; //biggest is 256. so Biggest Fan speed is 7000RPM
@@ -108,16 +125,6 @@ uchar   usbFunctionRead(uchar *data, uchar len)
 		//readBuffer[11] = OCR0A;
 
 		return 4;
-
-/*  	if(len > bytesRemaining)
-        len = bytesRemaining;
-		strncpy(data, readBuffer + currentAddress, len);
-    currentAddress += len;
-    bytesRemaining -= len;
-		if(bytesRemaining == 0)
-				readBufferDone = false;
-    return len;
-*/
 }
 
 /* usbFunctionWrite() is called when the host sends a chunk of data to the
@@ -152,7 +159,9 @@ uchar   usbFunctionWrite(uchar *data, uchar len)
 			else if(command[3] == FAN_MODE_4PIN)
 					PORTC |= _BV(PC3); //set to 1
 
-		}    
+		} else if( command[0] == COMMAND_SET_SN){
+			     eeprom_write_block(&command[1], 0, 6);
+		}
 
 		currentAddress += len;
     bytesRemaining -= len;
@@ -184,6 +193,30 @@ usbRequest_t    *rq = (void *)data;
 }
 
 /* ------------------------------------------------------------------------- */
+uchar usbFunctionDescriptor(usbRequest_t *rq)
+{
+   uchar len = 0;
+   usbMsgPtr = 0;
+   if (rq->wValue.bytes[1] == USBDESCR_STRING && rq->wValue.bytes[0] == 3) // 3 is the type of string descriptor, in this case the device serial number
+   {
+      usbMsgPtr = (uchar*)serialNumberDescriptor;
+      len = sizeof(serialNumberDescriptor);
+   }
+   return len;
+}
+/* ------------------------------------------------------------------------- */
+static void SetSerial(void)
+{
+   serialNumberDescriptor[0] = USB_STRING_DESCRIPTOR_HEADER(SERIAL_NUMBER_LENGTH);
+	 //TODO only work one by one. byte <-> int
+	 eeprom_read_block(&serialNumberDescriptor[1], 0, 1);
+	 eeprom_read_block(&serialNumberDescriptor[2], 1, 1);
+	 eeprom_read_block(&serialNumberDescriptor[3], 2, 1);
+	 eeprom_read_block(&serialNumberDescriptor[4], 3, 1);
+	 eeprom_read_block(&serialNumberDescriptor[5], 4, 1);
+	 eeprom_read_block(&serialNumberDescriptor[6], 5, 1);
+}
+/* ------------------------------------------------------------------------- */
 
 int main(void)
 {
@@ -197,6 +230,7 @@ int main(void)
      * That's the way we need D+ and D-. Therefore we don't need any
      * additional hardware initialization.
      */
+		SetSerial();
     usbInit();
     usbDeviceDisconnect();  /* enforce re-enumeration, do this while interrupts are disabled! */
     i = 0;

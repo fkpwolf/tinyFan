@@ -14,8 +14,9 @@ F_CPU   = 16000000	# in Hz
 # see below for fuse values for particular devices
 FUSE_L  = 0xdf
 FUSE_H  = 0xde
-AVRDUDE = avrdude -c usbtiny -P usb -p $(DEVICE) -V
-#AVRDUDE = avrdude -c dragon_isp -P usb -p $(DEVICE) -V 
+AVRDUDE = avrdude -c usbtiny -P usb -p $(DEVICE) -V -F
+#AVRDUDE = avrdude -c usbtiny -P usb -p $(DEVICE) -V -F -B 0.01
+#AVRDUDE = avrdude -c dragon_isp -P usb -p $(DEVICE) -V -B 3  
 
 CFLAGS  = -Iusbdrv -I. -Ilibs-device -DDEBUG_LEVEL=0
 OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o
@@ -119,11 +120,15 @@ program: flash fuse
 fuse:
 	@[ "$(FUSE_H)" != "" -a "$(FUSE_L)" != "" ] || \
 		{ echo "*** Edit Makefile and choose values for FUSE_L and FUSE_H!"; exit 1; }
-	$(AVRDUDE) -U hfuse:w:$(FUSE_H):m -U lfuse:w:$(FUSE_L):m -F
+	$(AVRDUDE) -U hfuse:w:$(FUSE_H):m -U lfuse:w:$(FUSE_L):m 
 
 # rule for uploading firmware:
 flash: main.hex
-	$(AVRDUDE) -U flash:w:main.hex:i -F
+	$(AVRDUDE) -U flash:w:main.hex:i 
+
+delivery: clean flash
+	@echo "----------done, read for delivery--------"
+	  
 
 # rule for deleting dependent files (those which can be built by Make):
 clean:

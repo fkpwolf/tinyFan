@@ -48,6 +48,13 @@ namespace OpenHardwareMonitor.Hardware {
       Pin4
   }
 
+  public enum FanFollow
+  {
+      NONE,
+      GPU,
+      CPU
+  }
+
   public interface IControl {
 
     Identifier Identifier { get; }
@@ -55,6 +62,10 @@ namespace OpenHardwareMonitor.Hardware {
     ControlMode ControlMode { get; }
 
     FanMode FanMode { get; }
+    FanFollow FanFollow
+    {
+        get;
+    }
 
     float SoftwareValue { get; }
 
@@ -67,5 +78,8 @@ namespace OpenHardwareMonitor.Hardware {
 
 
     void SetTheFanMode(FanMode fanMode);
+
+    void SetTheFanFollow(FanFollow fanFollow);
+
   }
 }

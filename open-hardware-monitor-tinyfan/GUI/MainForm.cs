@@ -378,6 +378,19 @@ namespace OpenHardwareMonitor.GUI {
     private void HardwareAdded(IHardware hardware) {      
       SubHardwareAdded(hardware, root);
       PlotSelectionChanged(this, null);
+      //track CPU&GPU
+      HardwareType type = hardware.HardwareType;
+      if (type.Equals(HardwareType.Mainboard)){
+          foreach (IHardware h in hardware.SubHardware){
+              if (h.HardwareType == HardwareType.SuperIO){
+                  Singleton.Instance().SuperIO = h;
+                  break;
+              }
+          }
+          
+      } else if(type.ToString().ToLower().StartsWith("gpu")){
+          Singleton.Instance().GPU = hardware;
+      }
     }
 
     private void HardwareRemoved(IHardware hardware) {
@@ -590,14 +603,14 @@ namespace OpenHardwareMonitor.GUI {
           if (node.Sensor.Control != null) {
             treeContextMenu.MenuItems.Add(new MenuItem("-"));
             IControl control = node.Sensor.Control;
-            MenuItem controlItem = new MenuItem("Control");
-            MenuItem defaultItem = new MenuItem("Default");
+            MenuItem controlItem = new MenuItem("控制");
+            MenuItem defaultItem = new MenuItem("默认");
             defaultItem.Checked = control.ControlMode == ControlMode.Default;
             controlItem.MenuItems.Add(defaultItem);
             defaultItem.Click += delegate(object obj, EventArgs args) {
               control.SetDefault();
             };
-            MenuItem manualItem = new MenuItem("Manual");
+            MenuItem manualItem = new MenuItem("手动");
             controlItem.MenuItems.Add(manualItem);
             manualItem.Checked = control.ControlMode == ControlMode.Software;
             for (int i = 0; i <= 100; i += 5) {
@@ -617,28 +630,44 @@ namespace OpenHardwareMonitor.GUI {
             //fan add
             if (node.Sensor.SensorType.Equals(SensorType.TinyFanControl))
             {
-                MenuItem controlModeItem = new MenuItem("Fan Mode");
+                MenuItem controlModeItem = new MenuItem("风扇类型");
                 treeContextMenu.MenuItems.Add(controlModeItem);
-                MenuItem Pin3 = new MenuItem("3 Pin Fan");
+                MenuItem Pin3 = new MenuItem("3针");
                 Pin3.Checked = control.FanMode == FanMode.Pin3;
-                Pin3.Click += delegate(object obj, EventArgs args)
-                {
-                    //string[] splits = node.Sensor.Name.Split(new string[] {"-"}, StringSplitOptions.None);
-                    //string sensorName = splits[0];
-                    //node.Text = sensorName + "-3 pin";
+                Pin3.Click += delegate(object obj, EventArgs args){
                     control.SetTheFanMode(FanMode.Pin3);
                 };
-                MenuItem Pin4 = new MenuItem("4 Pin Fan");
+                MenuItem Pin4 = new MenuItem("4针 (PWM)");
                 Pin4.Checked = control.FanMode == FanMode.Pin4;
-                Pin4.Click += delegate(object obj, EventArgs args)
-                {
-                    //string[] splits = node.Sensor.Name.Split(new string[] { "-" }, StringSplitOptions.None);
-                    // string sensorName = splits[0];
-                    // node.Text = sensorName + "-4 pin";
+                Pin4.Click += delegate(object obj, EventArgs args){
                     control.SetTheFanMode(FanMode.Pin4);
                 };
                 controlModeItem.MenuItems.Add(Pin3);
                 controlModeItem.MenuItems.Add(Pin4);
+                //add fan-follow. should all fan support this feature. TODO
+                MenuItem controlFanFollow = new MenuItem("自动跟随");
+                treeContextMenu.MenuItems.Add(controlFanFollow);
+                MenuItem followGPU = new MenuItem("显卡");
+                followGPU.Checked = control.FanFollow == FanFollow.GPU;
+                followGPU.Click += delegate(object obj, EventArgs args)
+                {
+                    control.SetTheFanFollow(FanFollow.GPU);
+                };
+                MenuItem followCPU = new MenuItem("CPU");
+                followCPU.Checked = control.FanFollow == FanFollow.CPU;
+                followCPU.Click += delegate(object obj, EventArgs args)
+                {
+                    control.SetTheFanFollow(FanFollow.CPU);
+                };
+                MenuItem followNONE = new MenuItem("关闭");
+                followNONE.Checked = control.FanFollow == FanFollow.NONE;
+                followNONE.Click += delegate(object obj, EventArgs args)
+                {
+                    control.SetTheFanFollow(FanFollow.NONE);
+                };
+                controlFanFollow.MenuItems.Add(followNONE);
+                controlFanFollow.MenuItems.Add(followGPU);
+                controlFanFollow.MenuItems.Add(followCPU);
             }
             //fan extend
           }

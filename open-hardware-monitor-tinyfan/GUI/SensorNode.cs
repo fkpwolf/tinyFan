@@ -128,20 +128,60 @@ namespace OpenHardwareMonitor.GUI {
     }
 
 
-    public new System.Drawing.Image Image
-    {
-        get
-        {
+    public new System.Drawing.Image Image{
+        get{
             //fan
-            if (sensor.SensorType.Equals(SensorType.TinyFanControl))
-            {
+            if (sensor.SensorType.Equals(SensorType.TinyFanControl)){
                if(sensor.Control.FanMode.Equals(FanMode.Pin3))
                     this.image = Utilities.EmbeddedResources.GetImage("fan3pin.png");
                 else
                     this.image = Utilities.EmbeddedResources.GetImage("fan4pin.png");
+               //merge
+               /*IHardware gpu = Singleton.Instance().GPU;
+               System.Drawing.Image followGPUImage = null;
+               if (gpu.HardwareType.Equals(HardwareType.GpuAti))
+                    followGPUImage = Utilities.EmbeddedResources.GetImage("ati.png");//we can reuse this kind of image
+               else if(gpu.HardwareType.Equals(HardwareType.GpuNvidia))
+                   followGPUImage = Utilities.EmbeddedResources.GetImage("nvidia.png");
+               else
+                   followGPUImage = Utilities.EmbeddedResources.GetImage("chip.png");
+
+               System.Drawing.Image followCPUImage = Utilities.EmbeddedResources.GetImage("cpu.png");
+               List<System.Drawing.Image> images = new List<System.Drawing.Image>();
+               images.Add(this.image);
+               if(sensor.Control.FanFollow.Equals(FanFollow.CPU))
+                   images.Add(followCPUImage);
+               else if(sensor.Control.FanFollow.Equals(FanFollow.GPU))
+                   images.Add(followGPUImage);
+               System.Drawing.Bitmap result = Utilities.EmbeddedResources.Combine(images.ToArray());
+               this.image = result;*/
             }
             //fan
             return this.image;
+        }
+    }
+
+    /*
+     * property for tinyfan fan control "follow mode". Configure it in MainForm.cs Design treeView's Properties Tab 
+     */
+    public new System.Drawing.Image LastImage{
+        get{
+            if (sensor.SensorType.Equals(SensorType.TinyFanControl)){
+                if (sensor.Control.FanFollow.Equals(FanFollow.CPU))
+                    return Utilities.EmbeddedResources.GetImage("cpu.png");
+                else if (sensor.Control.FanFollow.Equals(FanFollow.GPU)){
+                    IHardware gpu = Singleton.Instance().GPU;
+                    System.Drawing.Image followGPUImage = null;
+                    if (gpu.HardwareType.Equals(HardwareType.GpuAti))
+                        followGPUImage = Utilities.EmbeddedResources.GetImage("ati.png");//we can reuse this kind of image
+                    else if (gpu.HardwareType.Equals(HardwareType.GpuNvidia))
+                        followGPUImage = Utilities.EmbeddedResources.GetImage("nvidia.png");
+                    else
+                        followGPUImage = Utilities.EmbeddedResources.GetImage("chip.png");
+                    return followGPUImage;
+                }
+            }
+            return null;
         }
     }
 

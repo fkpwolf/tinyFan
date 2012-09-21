@@ -48,9 +48,12 @@ namespace OpenHardwareMonitor.Hardware {
     private readonly ISettings settings;
     private ControlMode mode;
     private FanMode fanMode;
+    private FanFollow fanFollow;
     private float softwareValue;
     private float minSoftwareValue;
     private float maxSoftwareValue;
+      //fan add. only for init of fan duty value(50)
+    private SensorType sensorType;
 
     public Control(ISensor sensor, ISettings settings, float minSoftwareValue,
       float maxSoftwareValue) 
@@ -59,14 +62,20 @@ namespace OpenHardwareMonitor.Hardware {
       this.settings = settings;
       this.minSoftwareValue = minSoftwareValue;
       this.maxSoftwareValue = maxSoftwareValue;
+      //fan add
+      this.sensorType = sensor.SensorType;
 
+      float softValue = 0;
       if (!float.TryParse(settings.GetValue(
-          new Identifier(identifier, "value").ToString(), "0"),
+          new Identifier(identifier, "value").ToString(), "-a"),
         NumberStyles.Float, CultureInfo.InvariantCulture,
-        out this.softwareValue)) 
-      {
-        this.softwareValue = 0;
+        out softValue)){
+          this.softwareValue = 0;
+          if (this.sensorType.Equals(SensorType.TinyFanControl))
+              this.SoftwareValue = 50; //init value(when .config was not exist)
       }
+      else
+          this.softwareValue = softValue;
       int mode;
       if (!int.TryParse(settings.GetValue(
           new Identifier(identifier, "mode").ToString(),
@@ -81,15 +90,28 @@ namespace OpenHardwareMonitor.Hardware {
       int fanMode;
       if (!int.TryParse(settings.GetValue(
           new Identifier(identifier, "fanMode").ToString(),
-          ((int)FanMode.Pin3).ToString(CultureInfo.InvariantCulture)),
+          ((int)FanMode.Pin4).ToString(CultureInfo.InvariantCulture)),
         NumberStyles.Integer, CultureInfo.InvariantCulture,
         out fanMode))
       {
-          this.fanMode = FanMode.Pin3;
+          this.fanMode = FanMode.Pin4;
       }
       else
       {
           this.fanMode = (FanMode)fanMode;
+      }
+      int fanFollow;//again
+      if (!int.TryParse(settings.GetValue(
+          new Identifier(identifier, "fanFollow").ToString(),
+          ((int)FanFollow.NONE).ToString(CultureInfo.InvariantCulture)),
+        NumberStyles.Integer, CultureInfo.InvariantCulture,
+        out fanFollow))
+      {
+          this.fanFollow = FanFollow.NONE;
+      }
+      else
+      {
+          this.fanFollow = (FanFollow)fanFollow;
       }
     }
 
@@ -129,6 +151,25 @@ namespace OpenHardwareMonitor.Hardware {
                     FanModeChanged(this);
                 this.settings.SetValue(new Identifier(identifier, "fanMode").ToString(),
                   ((int)fanMode).ToString(CultureInfo.InvariantCulture));
+            }
+        }
+    }
+
+    public FanFollow FanFollow
+    {
+        get
+        {
+            return fanFollow;
+        }
+        private set
+        {
+            if (fanFollow != value)
+            {
+                fanFollow = value;
+                if (FanFollowChanged != null)
+                    FanFollowChanged(this);
+                this.settings.SetValue(new Identifier(identifier, "fanFollow").ToString(),
+                  ((int)fanFollow).ToString(CultureInfo.InvariantCulture));
             }
         }
     }
@@ -173,9 +214,14 @@ namespace OpenHardwareMonitor.Hardware {
     {
         FanMode = fanMode;
     }
+    public void SetTheFanFollow(FanFollow ff)
+    {
+        FanFollow = ff;
+    }
 
     internal event ControlEventHandler ControlModeChanged;
     internal event ControlEventHandler FanModeChanged;
+    internal event ControlEventHandler FanFollowChanged;
     internal event ControlEventHandler SoftwareControlValueChanged;
   }
 }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Win32;
 using System.Management;
+using USBInterface;
+
 
 namespace OpenHardwareMonitor.Hardware.TinyFan
 {
@@ -16,13 +18,20 @@ namespace OpenHardwareMonitor.Hardware.TinyFan
         {
             // TODO: Complete member initialization
             this.settings = settings;
-            if (!this.isInstall())
+            USBInterface.HIDInterface.interfaceDetails[] allDevices = this.getDevicesDetails();
+            if (allDevices.Length == 0)
             {
                 report.Append("Didn't find TinyFan USB device.");
                 return;
             }
-            TinyFan tinyFan = new TinyFan("tinyfan", settings);
-            this.hardware.Add(tinyFan);
+            for (int i = 0; i < allDevices.Length; i++)
+            {
+                USBInterface.HIDInterface.interfaceDetails deviceInfos = allDevices[i];
+                report.AppendLine("Find one device. It's path is:" + deviceInfos.devicePath);
+                TinyFan tinyFan = new TinyFan("tinyfan", settings, deviceInfos);
+                this.hardware.Add(tinyFan);
+            }
+            
         }
 
         public IHardware[] Hardware
@@ -61,6 +70,26 @@ namespace OpenHardwareMonitor.Hardware.TinyFan
                 }
             }
             return false;
+        }
+
+        /*copy from http://openavrusb.com/index.php/hid-device-class
+         * only use it to fetch all tinyfan devices
+         * failed when use it to send HID report(fallback to hidtool.dll)
+         */
+        public USBInterface.HIDInterface.interfaceDetails[] getDevicesDetails()
+        {
+            List<USBInterface.HIDInterface.interfaceDetails> result = new List<USBInterface.HIDInterface.interfaceDetails>();
+            USBInterface.HIDInterface.interfaceDetails[] devices = USBInterface.HIDInterface.getConnectedDevices();
+            for (int i = 0; i < devices.Length; i++)
+            {
+                USBInterface.HIDInterface.interfaceDetails device = devices[i];
+                //report.AppendLine("USB device " + device.manufacturer + ", it's sn is:" + device.serialNumber);
+                if (device.VID == 5824 && device.PID == 1503)
+                {
+                    result.Add(device);
+                }
+            }
+            return result.ToArray();
         }
 
         public string GetReport()

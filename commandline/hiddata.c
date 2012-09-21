@@ -42,6 +42,63 @@ char            *ascii = buffer;
     *ascii++ = 0;
 }
 
+int usbhidOpenDevice2(usbDevice_t **device, char *devicePath, int vendor, char *vendorName, int product, char *productName, int usesReportIDs)
+{
+HANDLE                              handle = INVALID_HANDLE_VALUE;
+int                                 openFlag = 0;  /* may be FILE_FLAG_OVERLAPPED */
+HIDD_ATTRIBUTES                     deviceAttributes;
+int                                 errorCode = USBOPEN_ERR_NOTFOUND;
+				
+        DEBUG_PRINT(("cchecking HID path \"%s\"\n", devicePath));
+#if 0
+        /* If we want to access a mouse our keyboard, we can only use feature
+         * requests as the device is locked by Windows. It must be opened
+         * with ACCESS_TYPE_NONE.
+         */
+        handle = CreateFile(deviceDetails->DevicePath, ACCESS_TYPE_NONE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, openFlag, NULL);
+#endif
+        /* attempt opening for R/W -- we don't care about devices which can't be accessed */
+        handle = CreateFile(devicePath, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, openFlag, NULL);
+        if(handle == INVALID_HANDLE_VALUE){
+            DEBUG_PRINT(("opening failed: %d\n", (int)GetLastError()));
+            /* errorCode = USBOPEN_ERR_ACCESS; opening will always fail for mouse -- ignore */
+            return 0;
+        }
+        deviceAttributes.Size = sizeof(deviceAttributes);
+        HidD_GetAttributes(handle, &deviceAttributes);
+        DEBUG_PRINT(("device attributes: vid=%d pid=%d\n", deviceAttributes.VendorID, deviceAttributes.ProductID));
+        if(deviceAttributes.VendorID != vendor || deviceAttributes.ProductID != product)
+            return 0;   /* ignore this device */
+        errorCode = USBOPEN_ERR_NOTFOUND;
+        if(vendorName != NULL && productName != NULL){
+            char    buffer[512];
+            if(!HidD_GetManufacturerString(handle, buffer, sizeof(buffer))){
+                DEBUG_PRINT(("error obtaining vendor name\n"));
+                errorCode = USBOPEN_ERR_IO;
+                return errorCode;
+            }
+            convertUniToAscii(buffer);
+            DEBUG_PRINT(("vendorName = \"%s\"\n", buffer));
+            if(strcmp(vendorName, buffer) != 0)
+                return 0;
+            if(!HidD_GetProductString(handle, buffer, sizeof(buffer))){
+                DEBUG_PRINT(("error obtaining product name\n"));
+                errorCode = USBOPEN_ERR_IO;
+                return errorCode;
+            }
+            convertUniToAscii(buffer);
+            DEBUG_PRINT(("productName = \"%s\"\n", buffer));
+            if(strcmp(productName, buffer) != 0)
+                return errorCode;
+        }
+
+    if(handle != INVALID_HANDLE_VALUE){
+        *device = (usbDevice_t *)handle;
+        errorCode = 0;
+    }
+    return errorCode;
+}
+
 int usbhidOpenDevice(usbDevice_t **device, int vendor, char *vendorName, int product, char *productName, int usesReportIDs)
 {
 GUID                                hidGuid;        /* GUID for HID driver */
@@ -72,7 +129,7 @@ HIDD_ATTRIBUTES                     deviceAttributes;
         deviceDetails->cbSize = sizeof(*deviceDetails);
         /* this call is for real: */
         SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, deviceDetails, size, &size, NULL);
-        DEBUG_PRINT(("checking HID path \"%s\"\n", deviceDetails->DevicePath));
+        DEBUG_PRINT(("cchecking HID path \"%s\"\n", deviceDetails->DevicePath));
 #if 0
         /* If we want to access a mouse our keyboard, we can only use feature
          * requests as the device is locked by Windows. It must be opened

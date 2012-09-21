@@ -113,6 +113,8 @@
     <Compile Include="Hardware\ATI\ADL.cs" />
     <Compile Include="Hardware\ATI\ATIGPU.cs" />
     <Compile Include="Hardware\ATI\ATIGroup.cs" />
+    <Compile Include="Hardware\Singleton.cs" />
+    <Compile Include="Hardware\USBInterface.cs" />
     <Compile Include="Hardware\Util.cs" />
     <Compile Include="Hardware\Control.cs" />
     <Compile Include="Hardware\FirmwareTable.cs" />
@@ -190,6 +192,7 @@
     <Compile Include="Collections\ReadOnlyArray.cs" />
     <Compile Include="Hardware\TinyFan\TinyFanGroup.cs" />
     <Compile Include="Hardware\TinyFan\TinyFan.cs" />
+    <Compile Include="Hardware\Utilities.cs" />
     <Compile Include="Properties\AssemblyLibInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Hardware\ThreadAffinity.cs" />

@@ -56,6 +56,10 @@ int usbhidSetReport(usbDevice_t *device, char *buffer, int len);
  * to 0 (dummy report ID).
  * Returns: 0 on success, an error code otherwise.
  */
+int usbhidGetReport2(usbDevice_t *device, char *devicePath, int reportID, char *buffer, int *len);
+/*
+ * fan add
+ */
 int usbhidGetReport(usbDevice_t *device, int reportID, char *buffer, int *len);
 /* This function obtains a feature report from the device. The requested
  * report-ID is passed in 'reportID'. The caller must pass a buffer of the size

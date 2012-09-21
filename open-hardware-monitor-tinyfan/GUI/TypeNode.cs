@@ -50,23 +50,23 @@ namespace OpenHardwareMonitor.GUI {
       switch (sensorType) {
         case SensorType.Voltage: 
           this.Image = Utilities.EmbeddedResources.GetImage("voltage.png");
-          this.Text = "Voltages";
+          this.Text = "电压";
           break;
         case SensorType.Clock:
           this.Image = Utilities.EmbeddedResources.GetImage("clock.png");
-          this.Text = "Clocks";
+          this.Text = "频率";
           break;
         case SensorType.Load:
           this.Image = Utilities.EmbeddedResources.GetImage("load.png");
-          this.Text = "Load";
+          this.Text = "负载";
           break;
         case SensorType.Temperature:
           this.Image = Utilities.EmbeddedResources.GetImage("temperature.png");
-          this.Text = "Temperatures";
+          this.Text = "温度";
           break;
         case SensorType.Fan:
           this.Image = Utilities.EmbeddedResources.GetImage("fan.png");
-          this.Text = "Fans";
+          this.Text = "风扇";
           break;
         case SensorType.Flow:
           this.Image = Utilities.EmbeddedResources.GetImage("flow.png");
@@ -74,11 +74,11 @@ namespace OpenHardwareMonitor.GUI {
           break;
         case SensorType.Control:
           this.Image = Utilities.EmbeddedResources.GetImage("control.png");
-          this.Text = "Controls";
+          this.Text = "控制台";
           break;
         case SensorType.TinyFanControl:
           this.Image = Utilities.EmbeddedResources.GetImage("control.png");
-          this.Text = "Controls";
+          this.Text = "控制台";
           break;
         case SensorType.Level:
           this.Image = Utilities.EmbeddedResources.GetImage("level.png");
@@ -86,7 +86,7 @@ namespace OpenHardwareMonitor.GUI {
           break;
         case SensorType.Power:
           this.Image = Utilities.EmbeddedResources.GetImage("power.png");
-          this.Text = "Powers";
+          this.Text = "功率";
           break;
         case SensorType.Data:
           this.Image = Utilities.EmbeddedResources.GetImage("data.png");

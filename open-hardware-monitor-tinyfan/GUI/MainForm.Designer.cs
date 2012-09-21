@@ -111,6 +111,7 @@ namespace OpenHardwareMonitor.GUI {
         this.treeContextMenu = new System.Windows.Forms.ContextMenu();
         this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
         this.timer = new System.Windows.Forms.Timer(this.components);
+        this.nodeIcon1 = new Aga.Controls.Tree.NodeControls.NodeIcon();
         this.splitContainer = new OpenHardwareMonitor.GUI.SplitContainerAdv();
         this.treeView = new Aga.Controls.Tree.TreeViewAdv();
         this.splitContainer.Panel1.SuspendLayout();
@@ -119,28 +120,29 @@ namespace OpenHardwareMonitor.GUI {
         // 
         // sensor
         // 
-        this.sensor.Header = "Sensor";
+        this.sensor.Header = "检测点";
         this.sensor.SortOrder = System.Windows.Forms.SortOrder.None;
+        this.sensor.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
         this.sensor.TooltipText = null;
         this.sensor.Width = 250;
         // 
         // value
         // 
-        this.value.Header = "Value";
+        this.value.Header = "当前值";
         this.value.SortOrder = System.Windows.Forms.SortOrder.None;
         this.value.TooltipText = null;
         this.value.Width = 100;
         // 
         // min
         // 
-        this.min.Header = "Min";
+        this.min.Header = "最小";
         this.min.SortOrder = System.Windows.Forms.SortOrder.None;
         this.min.TooltipText = null;
         this.min.Width = 100;
         // 
         // max
         // 
-        this.max.Header = "Max";
+        this.max.Header = "最大";
         this.max.SortOrder = System.Windows.Forms.SortOrder.None;
         this.max.TooltipText = null;
         this.max.Width = 100;
@@ -214,18 +216,18 @@ namespace OpenHardwareMonitor.GUI {
             this.resetMenuItem,
             this.menuItem6,
             this.exitMenuItem});
-        this.fileMenuItem.Text = "File";
+        this.fileMenuItem.Text = "文件";
         // 
         // saveReportMenuItem
         // 
         this.saveReportMenuItem.Index = 0;
-        this.saveReportMenuItem.Text = "Save Report...";
+        this.saveReportMenuItem.Text = "保存报告...";
         this.saveReportMenuItem.Click += new System.EventHandler(this.saveReportMenuItem_Click);
         // 
         // sumbitReportMenuItem
         // 
         this.sumbitReportMenuItem.Index = 1;
-        this.sumbitReportMenuItem.Text = "Submit Report...";
+        this.sumbitReportMenuItem.Text = "发送报告...";
         this.sumbitReportMenuItem.Click += new System.EventHandler(this.sumbitReportMenuItem_Click);
         // 
         // MenuItem2
@@ -236,7 +238,7 @@ namespace OpenHardwareMonitor.GUI {
         // resetMenuItem
         // 
         this.resetMenuItem.Index = 3;
-        this.resetMenuItem.Text = "Reset";
+        this.resetMenuItem.Text = "重置";
         this.resetMenuItem.Click += new System.EventHandler(this.resetClick);
         // 
         // menuItem6
@@ -247,7 +249,7 @@ namespace OpenHardwareMonitor.GUI {
         // exitMenuItem
         // 
         this.exitMenuItem.Index = 5;
-        this.exitMenuItem.Text = "Exit";
+        this.exitMenuItem.Text = "退出";
         this.exitMenuItem.Click += new System.EventHandler(this.exitClick);
         // 
         // viewMenuItem
@@ -261,12 +263,12 @@ namespace OpenHardwareMonitor.GUI {
             this.gadgetMenuItem,
             this.MenuItem1,
             this.columnsMenuItem});
-        this.viewMenuItem.Text = "View";
+        this.viewMenuItem.Text = "查看";
         // 
         // resetMinMaxMenuItem
         // 
         this.resetMinMaxMenuItem.Index = 0;
-        this.resetMinMaxMenuItem.Text = "Reset Min/Max";
+        this.resetMinMaxMenuItem.Text = "重置 最小值/最大值";
         this.resetMinMaxMenuItem.Click += new System.EventHandler(this.resetMinMaxMenuItem_Click);
         // 
         // MenuItem3
@@ -331,27 +333,27 @@ namespace OpenHardwareMonitor.GUI {
             this.plotLocationMenuItem,
             this.MenuItem4,
             this.hddMenuItem});
-        this.optionsMenuItem.Text = "Options";
+        this.optionsMenuItem.Text = "选项";
         // 
         // startMinMenuItem
         // 
         this.startMinMenuItem.Index = 0;
-        this.startMinMenuItem.Text = "Start Minimized";
+        this.startMinMenuItem.Text = "启动时最小化";
         // 
         // minTrayMenuItem
         // 
         this.minTrayMenuItem.Index = 1;
-        this.minTrayMenuItem.Text = "Minimize To Tray";
+        this.minTrayMenuItem.Text = "最小化到托盘";
         // 
         // minCloseMenuItem
         // 
         this.minCloseMenuItem.Index = 2;
-        this.minCloseMenuItem.Text = "Minimize On Close";
+        this.minCloseMenuItem.Text = "关闭时最小化";
         // 
         // startupMenuItem
         // 
         this.startupMenuItem.Index = 3;
-        this.startupMenuItem.Text = "Run On Windows Startup";
+        this.startupMenuItem.Text = "开机启动";
         // 
         // separatorMenuItem
         // 
@@ -417,12 +419,12 @@ namespace OpenHardwareMonitor.GUI {
         this.helpMenuItem.Index = 3;
         this.helpMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.aboutMenuItem});
-        this.helpMenuItem.Text = "Help";
+        this.helpMenuItem.Text = "帮助";
         // 
         // aboutMenuItem
         // 
         this.aboutMenuItem.Index = 0;
-        this.aboutMenuItem.Text = "About";
+        this.aboutMenuItem.Text = "关于...";
         this.aboutMenuItem.Click += new System.EventHandler(this.aboutMenuItem_Click);
         // 
         // saveFileDialog
@@ -437,6 +439,13 @@ namespace OpenHardwareMonitor.GUI {
         // 
         this.timer.Interval = 1000;
         this.timer.Tick += new System.EventHandler(this.timer_Tick);
+        // 
+        // nodeIcon1
+        // 
+        this.nodeIcon1.DataPropertyName = "LastImage";
+        this.nodeIcon1.LeftMargin = 1;
+        this.nodeIcon1.ParentColumn = this.sensor;
+        this.nodeIcon1.ScaleMode = Aga.Controls.Tree.ImageScaleMode.Clip;
         // 
         // splitContainer
         // 
@@ -484,7 +493,9 @@ namespace OpenHardwareMonitor.GUI {
         this.treeView.NodeControls.Add(this.nodeTextBoxValue);
         this.treeView.NodeControls.Add(this.nodeTextBoxMin);
         this.treeView.NodeControls.Add(this.nodeTextBoxMax);
+        this.treeView.NodeControls.Add(this.nodeIcon1);
         this.treeView.SelectedNode = null;
+        this.treeView.ShowNodeToolTips = true;
         this.treeView.Size = new System.Drawing.Size(515, 408);
         this.treeView.TabIndex = 0;
         this.treeView.Text = "treeView";
@@ -499,7 +510,7 @@ namespace OpenHardwareMonitor.GUI {
         // 
         this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.ClientSize = new System.Drawing.Size(557, 483);
+        this.ClientSize = new System.Drawing.Size(557, 63);
         this.Controls.Add(this.splitContainer);
         this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
         this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -570,6 +581,7 @@ namespace OpenHardwareMonitor.GUI {
     private System.Windows.Forms.MenuItem plotWindowMenuItem;
     private System.Windows.Forms.MenuItem plotBottomMenuItem;
     private System.Windows.Forms.MenuItem plotRightMenuItem;
+    private Aga.Controls.Tree.NodeControls.NodeIcon nodeIcon1;
   }
 }
 

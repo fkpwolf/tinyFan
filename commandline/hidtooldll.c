@@ -46,14 +46,27 @@ int             err;
     }
     return dev;
 }
+static usbDevice_t  *openDevice2(char* devicePath)
+{
+usbDevice_t     *dev = NULL;
+unsigned char   rawVid[2] = {USB_CFG_VENDOR_ID}, rawPid[2] = {USB_CFG_DEVICE_ID};
+char            vendorName[] = {USB_CFG_VENDOR_NAME, 0}, productName[] = {USB_CFG_DEVICE_NAME, 0};
+int             vid = rawVid[0] + 256 * rawVid[1];
+int             pid = rawPid[0] + 256 * rawPid[1];
+int             err;
 
+    if((err = usbhidOpenDevice2(&dev, devicePath, vid, vendorName, pid, productName, 0)) != 0){
+        fprintf(stderr, "error finding %s: %s\n", productName, usbErrorMessage(err));
+        return NULL;
+    }
+    return dev;
+}
 /* ------------------------------------------------------------------------- */
-
-void get_tach(char* ret, char* resp){
+void get_tach(char* devicePath, char* ret, char* resp){
 	usbDevice_t *dev;
 	char  buffer[129]; 
 	int  err;
-	if((dev = openDevice()) == NULL)
+	if((dev = openDevice2(devicePath)) == NULL)
 			strncpy( resp, "can't open device", 128 );
 	 int len = sizeof(buffer);
 	 if((err = usbhidGetReport(dev, 0, buffer, &len)) != 0){
@@ -71,12 +84,12 @@ void get_tach(char* ret, char* resp){
 }
 
 /* ------------------------------------------------------------------------- */
-void set_duty(char* duty, char* resp){
+void set_duty(char* devicePath, char* duty, char* resp){
 	strncpy(resp, "init", 128 );
 	usbDevice_t *dev;
 	char  buffer[129]; 
 	int  err;
-	if((dev = openDevice()) == NULL){
+	if((dev = openDevice2(devicePath)) == NULL){
 			strncpy(resp, "can't open device", 128 );
 			return;
 	}
@@ -96,12 +109,12 @@ void set_duty(char* duty, char* resp){
 
 
 /* ------------------------------------------------------------------------- */
-void set_fan_mode(char* duty, char* resp){
+void set_fan_mode(char* devicePath, char* duty, char* resp){
 	strncpy(resp, "init", 128 );
 	usbDevice_t *dev;
 	char  buffer[129]; 
 	int  err;
-	if((dev = openDevice()) == NULL){
+	if((dev = openDevice2(devicePath)) == NULL){
 			strncpy(resp, "can't open device", 128 );
 			return;
 	}

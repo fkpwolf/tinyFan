@@ -16,3 +16,13 @@ open-hardware-monitor-tinyfan/External/hidtool.dll
 open-hardware-monitor-tinyfan/OpenHardwareMonitor.suo
 
 commandline/hiddata.o
+
+firmware/eedump.hex
+
+firmware/usbdrv/usbdrv.o
+
+firmware/main.o
+
+firmware/main.hex
+
+firmware/main.elf

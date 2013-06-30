@@ -1,4 +1,13 @@
+主要功能：
 
+1）通过mini USB和12V的大四PIN连结设备。可以PCI方式安装，或者自己使用PCB板上的空位安装。
 
-Mac
-  to view usb device, use command "system_profiler SPUSBDataType"
+2）软件监控风扇，最多四路风扇。每路最大电压12V，最大电流1A；
+
+3）风扇接头可以在软件中切换成4PIN PWM模式或者3PIN模式。前者用PWM调速，后者用电压调速；
+
+4）可以多个调试器同时使用；
+
+5）风扇转速可以手动在0%～100%间调整（0%时风扇停止），也可以设置成跟随CPU或者GPU风扇自动调整。
+
+6）软件在windows 7 32位和64位下测试过。 

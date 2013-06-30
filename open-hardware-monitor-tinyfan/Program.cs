@@ -41,6 +41,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using OpenHardwareMonitor.GUI;
+using Microsoft.Win32;
 
 namespace OpenHardwareMonitor {
   public static class Program {
@@ -62,12 +63,25 @@ namespace OpenHardwareMonitor {
 
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
-      using (GUI.MainForm form = new GUI.MainForm()) {
+      SystemEvents.PowerModeChanged += new PowerModeChangedEventHandler(SystemEvents_PowerModeChanged);
+       form = new GUI.MainForm();
         form.FormClosed += delegate(Object sender, FormClosedEventArgs e) {
           Application.Exit();
         };        
         Application.Run();
-      }
+      
+    }
+
+    static GUI.MainForm form;
+
+    private static void SystemEvents_PowerModeChanged(object sender,
+                       PowerModeChangedEventArgs e)
+    {
+        if (e.Mode == PowerModes.Resume)
+        {
+            Console.WriteLine("-----------------------I weak from resume--program.css");
+            form.reload();
+        }
     }
 
     private static bool IsFileAvailable(string fileName) {

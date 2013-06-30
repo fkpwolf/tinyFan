@@ -521,6 +521,12 @@ namespace OpenHardwareMonitor.GUI {
 
       this.Bounds = newBounds;
     }
+
+    public void reload()
+    {
+        computer.Close();
+        computer.Open();
+    }
     
     private void MainForm_FormClosed(object sender, FormClosedEventArgs e) {
       Visible = false;      

@@ -76,19 +76,6 @@ namespace OpenHardwareMonitor.Hardware.TinyFan
             //init device, since now device is passive and didn't save setting itself
             this.setFanPinMode();
             this.setTach();
-
-            //test.
-            SystemEvents.PowerModeChanged += new PowerModeChangedEventHandler(SystemEvents_PowerModeChanged);
-        }
-
-        private void SystemEvents_PowerModeChanged(object sender,
-                        PowerModeChangedEventArgs e)
-        {
-            if (e.Mode == PowerModes.Resume)
-            {
-                Console.WriteLine("-----------------------I weak from resume");
-                //here need to notify all controls to write value to all kinds of devices
-            }
         }
 
         public override HardwareType HardwareType
